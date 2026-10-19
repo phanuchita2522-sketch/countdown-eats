@@ -114,7 +114,7 @@ const T={
   nightTitle:['ตลาดโต้รุ่งกู้โลก','Night Market Rescue'],
   pts:['แต้ม','pts'],
   navHome:['ตลาดโต้รุ่ง','Night Market'],
-  navFridge:['ตู้เย็นคอนโด','Condo Fridge'],
+  navFridge:['ตู้เย็นชุมชน','Community'],
   navOrders:['คำสั่งซื้อ','My orders'],
   navMe:['โปรไฟล์','Profile'],
   langTitle:['🌐 ภาษา · Language','🌐 Language · ภาษา'],
@@ -123,7 +123,7 @@ const T={
   closedTitle:['กล่องสุ่มเปิดขายเวลา 18:00–21:00 น.','Mystery boxes go on sale 18:00–21:00'],
   closedSub:['อีกไม่นานร้านใกล้คุณจะปล่อยของปลายวัน','Nearby shops will soon release their end-of-day food.'],
   demoBtn:['ลองโหมดตลาดโต้รุ่ง (จำลองเวลา 18:00)','Try Night Market mode (simulate 18:00)'],
-  waitHint:['ระหว่างรอ ลองดูของแบ่งปันในคอนโดของคุณที่แท็บ “ตู้เย็นคอนโด” ได้เลย','While you wait, check food shared in your building under “Condo Fridge”.'],
+  waitHint:['ระหว่างรอ ลองดูของแบ่งปันในคอนโดของคุณที่แท็บ “ตู้เย็นชุมชน” (คอนโด/หมู่บ้าน/อพาร์ตเมนต์) ได้เลย','While you wait, check food shared in your condo / village / apartment under “Community”.'],
   radiusLabel:['ร้านในรัศมี','Shops within'],
   km:['กม.','km'],
   tag_halal:['ฮาลาล','Halal'],
@@ -411,6 +411,38 @@ const T={
   storageFull:['พื้นที่เก็บข้อมูลเดโมเต็ม ลบรูปเก่าก่อน','Demo storage is full — delete older photos first'],
   photoNote:['ระบบย่อรูปอัตโนมัติและลบข้อมูล GPS/EXIF ออก','Photos are resized automatically and GPS/EXIF data is stripped.'],
   delete:['ลบ','Delete'],
+  postedProd:['โพสต์แล้ว','Posted!'],
+  reportPost:['รายงานโพสต์','Report this post'],
+  commTitle:['ตู้เย็นชุมชน — แบ่งปันของในคอนโด/หมู่บ้าน/อพาร์ตเมนต์','Community fridge — share in your condo / village / apartment'],
+  commLogin:['เข้าสู่ระบบด้วย Google เพื่อดูและโพสต์ของแบ่งปันในชุมชนของคุณ','Sign in with Google to see and post shared food in your community'],
+  ck_condo:['คอนโด','Condo'], ck_village:['หมู่บ้าน','Village'], ck_apartment:['อพาร์ตเมนต์','Apartment'], ck_dorm:['หอพัก','Dorm'],
+  commKind:['ประเภทที่พัก','Type of place'],
+  commName:['ชื่อคอนโด / หมู่บ้าน / อพาร์ตเมนต์','Name of your condo / village / apartment'],
+  commNamePh:['เช่น ศุภาลัย ไพรด์ บางนา','e.g. Supalai Pride Bangna'],
+  commJoin:['เข้าร่วมชุมชนนี้','Join this community'],
+  commSame:['พิมพ์ชื่อให้เหมือนเพื่อนบ้าน จึงจะเห็นโพสต์ของกันและกัน','Type the name exactly like your neighbours so you see each other’s posts'],
+  commChange:['เปลี่ยนชุมชน','Change'],
+  commInbox:['📨 ข้อความ','📨 Messages'],
+  commNoInbox:['ยังไม่มีข้อความ','No messages yet'],
+  commDel:['ลบโพสต์','Delete post'],
+  commDeleted:['ลบโพสต์แล้ว','Post deleted'],
+  commHandover:['ขอบคุณที่แบ่งปัน 💚','Thanks for sharing 💚'],
+  commNeedName:['พิมพ์ชื่ออย่างน้อย 2 ตัวอักษร (ห้ามใส่เบอร์/ลิงก์)','Enter at least 2 characters (no phone / links)'],
+  commRefresh:['รีเฟรช','Refresh'],
+  commAsk:['ส่งข้อความถึงเจ้าของโพสต์ได้เลย นัดรับในจุดส่วนกลางเท่านั้น','Message the poster. Meet only in a shared area.'],
+  addShopBtn:['เพิ่มร้านใหม่','Add a new shop'],
+  delShopBtn:['ลบร้านนี้','Delete this shop'],
+  delShopTitle:['ลบร้าน “{n}” ?','Delete shop “{n}”?'],
+  delShopSub:['จะลบร้านนี้พร้อมเมนู รูป และรายการทั้งหมดถาวร กู้คืนไม่ได้','This permanently deletes the shop with all its menu, photos and listings. It cannot be undone.'],
+  delShopOpen:['ลบไม่ได้ ยังมีออเดอร์ค้างอยู่ รอให้รับของหรือยกเลิกก่อน','Cannot delete: there are open orders. Finish or cancel them first.'],
+  shopDeleted:['ลบร้านแล้ว','Shop deleted'],
+  delItemTitle:['ลบรายการ “{n}” ?','Delete item “{n}”?'],
+  delItemSub:['รายการนี้และรูปจะถูกลบ ถ้ามีอยู่ในเซ็ตจะถูกปรับด้วย','The item and its photo will be removed; any set containing it is adjusted.'],
+  delPhotoBtn:['ลบรูป','Remove photo'],
+  newPhotoBtn:['เปลี่ยนรูป','Change photo'],
+  photoRemoved:['ลบรูปแล้ว กด “เปลี่ยนรูป” เพื่อใส่รูปใหม่','Photo removed. Tap “Change photo” to add a new one'],
+  photoChanged:['เปลี่ยนรูปแล้ว','Photo updated'],
+  noPhotoYet:['ยังไม่มีรูป','No photo'],
   sampleLabel:['รูปตัวอย่าง','Sample'],
   cat_savory:['ของคาว','Savory'],
   cat_sweet:['ของหวาน','Sweet'],
@@ -1123,6 +1155,10 @@ const Srv={
     const id=await this.rpc('save_shop',{p_id:isNew?null:sh.id,p_doc:this.docOf(sh),p_pay:this.payOf(sh)});
     this.hash[id]=h; this.gc(); return id;
   },
+  async deleteShop(id){
+    try{ await this.rpc('delete_shop',{p_id:id}); delete this.hash[id]; this.gc(); return true; }
+    catch(e){ if(e&&e.code==='STATE') toast(t('delShopOpen')); else this.err(e); return false; }
+  },
   async create(sh){
     if(this.creating) return 0; this.creating=true;
     try{ const id=await this.saveOne(sh,true); this.dirty=false; await this.pullShops(true); return id; }
@@ -1310,7 +1346,7 @@ function closeSheet(){ $('#layer').innerHTML=''; }
 function flashOn(){ const h=new Date(Date.now()+BKK).getUTCHours(); return (DEMO_MODE&&S.demo) || (h>=18 && h<21); }
 function nextStart(){ const b=new Date(Date.now()+BKK); let x=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate(),11,0,0); if(Date.now()>=x) x+=864e5; return x; }
 function suspended(s){ return s.trust<3.5||Cloud.flagged.has(s.id); }
-function setTab(k){ S.tab=k; save(); render(); window.scrollTo(0,0); }
+function setTab(k){ S.tab=k; if(k==='fridge'&&typeof CM!=='undefined') CM.tried=false; save(); render(); window.scrollTo(0,0); }
 function timeStr(ms){ return new Date(ms).toLocaleTimeString(LOCALE[S.lang],{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}); }
 function dateStr(iso){ return new Date(iso+'T00:00:00Z').toLocaleDateString(LOCALE[S.lang],{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}); }
 function ptitle(p){ return loc(p.title); }
@@ -1670,7 +1706,8 @@ function openMenuMgr(sid,tab){
   if(MG.tab==='items'){
     body=`${isTimed(sh)?`<div class="text-xs muted mb-3">${t('foodDayNote')}</div>`:''}
       <div class="space-y-2 mb-4">${sh.items.map(m=>{ const stt=itemState(sh,m); return `<div class="card p-2">
-        <div class="flex items-center gap-3"><img src="${safeImg(m.img)}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:12px;opacity:${stt==='live'?1:.5}"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(loc(m.name))}</div><div class="text-xs muted">${esc(itemMeta(m))}${m.exp?' · '+t('expires',{d:esc(dateStr(m.exp))}):''}${m.fda?' · '+t('fdaLabel')+' '+esc(m.fda):''}</div><div class="mt-1">${badgeOf(stt)}</div></div><button class="chip" onclick="delItem(${sh.id},'${m.id}')">${t('delete')}</button></div>
+        <div class="flex items-center gap-3"><img src="${safeImg(m.img)}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:12px;opacity:${stt==='live'?1:.5}"><div class="flex-1 min-w-0"><div class="font-semibold truncate">${esc(loc(m.name))}</div><div class="text-xs muted">${esc(itemMeta(m))}${m.exp?' · '+t('expires',{d:esc(dateStr(m.exp))}):''}${m.fda?' · '+t('fdaLabel')+' '+esc(m.fda):''}</div><div class="mt-1">${badgeOf(stt)}</div></div><div class="flex flex-col gap-1 shrink-0"><button class="chip" onclick="askDelItem(${sh.id},'${m.id}')">🗑️ ${t('delete')}</button></div></div>
+        <div class="flex flex-wrap gap-2 mt-2"><label class="chip" style="cursor:pointer">🖼️ ${t('newPhotoBtn')}<input type="file" accept="image/*" onchange="changePhoto(${sh.id},'${m.id}',this)" style="position:absolute;opacity:0;width:1px;height:1px"></label>${m.img&&m.img!==PH_IMG?`<button class="chip" onclick="removePhoto(${sh.id},'${m.id}')">❌ ${t('delPhotoBtn')}</button>`:`<span class="text-xs muted self-center">${t('noPhotoYet')}</span>`}</div>
         <div class="grid grid-cols-3 gap-2 mt-2">
           <label class="text-xs font-semibold">${t('dishPrice')}<input type="number" inputmode="numeric" value="${m.price}" onchange="itemEdit(${sh.id},'${m.id}','price',this.value)"></label>
           <label class="text-xs font-semibold">${t('origPrice')}<input type="number" inputmode="numeric" value="${m.worth||''}" onchange="itemEdit(${sh.id},'${m.id}','worth',this.value)"></label>
@@ -1691,6 +1728,7 @@ function openMenuMgr(sid,tab){
   sheet(`<div class="display text-xl mb-1">${t('manageMenu')}</div><div class="text-xs muted mb-3">${t('shopModeSub')}</div>
     <label class="text-sm font-semibold" for="msh">${t('selectShop')}</label>
     <select id="msh" class="mb-3" onchange="openMenuMgr(+this.value)">${L.map(x=>`<option value="${x.id}" ${x.id===sh.id?'selected':''}>${esc(loc(x.name))}</option>`).join('')}</select>
+    <div class="flex gap-2 mb-3"><button class="chip flex-1" onclick="closeSheet();openRegister()">➕ ${t('addShopBtn')}</button><button class="chip flex-1" style="color:var(--chili)" onclick="askDelShop(${sh.id})">🗑️ ${t('delShopBtn')}</button></div>
     ${rel?`<button class="btn jade w-full mb-3" onclick="relistToday(${sh.id})">${t('relistToday',{n:rel})}</button>`:''}
     <div class="flex gap-1 mb-4">${tabBtn('items','tabItems')}${tabBtn('sets','tabSets')}${tabBtn('boxes','tabBoxes')}${tabBtn('daily','tabDaily')}${tabBtn('pay','tabPay')}</div>${body}`);
 }
@@ -1720,6 +1758,38 @@ function itemEdit(sid,iid,field,val){
   const removed=reconcileBundles(sh);
   if(!commit()){ Object.assign(m,prev); return; }
   toast(removed?t('delBundleWarn'):t('itemSaved')); render();
+}
+function askDelItem(sid,iid){
+  const sh=ownedShop(sid); if(!sh) return toast(t('notEditable')); const m=sh.items.find(x=>x.id===iid); if(!m) return;
+  sheet(`<div class="display text-xl mb-2">${t('delItemTitle',{n:esc(loc(m.name))})}</div><div class="text-sm muted mb-4">${t('delItemSub')}</div>
+    <div class="flex gap-2"><button class="btn ghost flex-1" onclick="openMenuMgr(${sid},'items')">${t('cancel')}</button><button class="btn flex-1" style="background:var(--chili)" onclick="delItem(${sid},'${iid}')">${t('delete')}</button></div>`);
+}
+async function changePhoto(sid,iid,inp){
+  const sh=ownedShop(sid); const f=inp.files&&inp.files[0]; if(!sh||!f) return;
+  const m=sh.items.find(x=>x.id===iid); if(!m) return;
+  if(!/^image\/(jpeg|png|webp|gif|heic|heif)$/i.test(f.type)) return toast(t('badImage'));
+  if(f.size>10*1024*1024) return toast(t('tooBig'));
+  try{ const img=await compressImage(f); if(!safeImg(img)) throw 0; const prev=m.img; m.img=img; m.ep=Date.now();
+    if(!commit()){ m.img=prev; return; } toast(t('photoChanged')); render(); openMenuMgr(sid,'items'); }
+  catch(e){ toast(t('badImage')); }
+}
+function removePhoto(sid,iid){
+  const sh=ownedShop(sid); if(!sh) return toast(t('notEditable')); const m=sh.items.find(x=>x.id===iid); if(!m) return;
+  const prev=m.img; m.img=PH_IMG; if(!commit()){ m.img=prev; return; }
+  toast(t('photoRemoved')); render(); openMenuMgr(sid,'items');
+}
+function askDelShop(sid){
+  const sh=ownedShop(sid); if(!sh) return toast(t('notEditable'));
+  sheet(`<div class="display text-xl mb-2">${t('delShopTitle',{n:esc(loc(sh.name))})}</div><div class="text-sm muted mb-4">${t('delShopSub')}</div>
+    <div class="flex gap-2"><button class="btn ghost flex-1" onclick="openMenuMgr(${sid})">${t('cancel')}</button><button class="btn flex-1" style="background:var(--chili)" onclick="doDelShop(${sid})">${t('delete')}</button></div>`);
+}
+async function doDelShop(sid){
+  const sh=ownedShop(sid); if(!sh) return;
+  if(window._delBusy) return; window._delBusy=true;
+  try{
+    if(PROD&&!(await Srv.deleteShop(sid))) return;
+    S.shops=S.shops.filter(x=>x.id!==sid); save(); closeSheet(); render(); toast(t('shopDeleted'));
+  } finally{ window._delBusy=false; }
 }
 function delItem(sid,iid){
   const sh=ownedShop(sid); if(!sh) return toast(t('notEditable'));
@@ -2078,14 +2148,13 @@ function render(){
   sweepOrders();
   document.documentElement.lang=HTMLLANG[S.lang];
   document.title='CountDown Eats – '+t('tagline');
-  if(PROD&&S.tab==='fridge') S.tab='home';                                   // condo fridge chat is a simulation: not offered to the public
   const night=flashOn();
   $('#app').classList.toggle('night',night && S.tab==='home');
   $('#hdr').innerHTML=header(night);
   $('#main').innerHTML=({home:viewHome,retail:viewRetail,fridge:viewFridge,orders:viewOrders,me:viewMe})[S.tab]();
   $('#banner').innerHTML=Ads.banner();
   $('#nav').innerHTML=[['home','🏮','navHome'],['retail','🏬','navRetail'],['fridge','🧊','navFridge'],['orders','🎟️','navOrders'],['me','🦸','navMe']]
-    .filter(([k])=>!(PROD&&k==='fridge')).map(([k,i,l])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')" aria-label="${t(l)}"><span class="ic">${i}</span>${t(l)}</button>`).join('');
+    .map(([k,i,l])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')" aria-label="${t(l)}"><span class="ic">${i}</span>${t(l)}</button>`).join('');
 }
 function header(night){
   const nm=night&&S.tab==='home';
@@ -2107,7 +2176,7 @@ function shopGroups(s){
   (s.sets||[]).forEach(st=>CATS.forEach(k=>{ if((+st.mix[k]||0)>0) g.add(grpOf(k)); }));
   return g;
 }
-function filteredShops(){ return (S.tab==='retail'?retailShops():filteredShops0().filter(s=>s.type!=='chain'||normQ(SQ))).sort(byDistance); }
+function filteredShops(){ return (S.tab==='retail'?retailShops():filteredShops0().filter(s=>s.type!=='chain')).sort(byDistance); }
 function retailShops(){
   const q=normQ(SQ);
   return S.shops.filter(s=>s.type==='chain'&&liveOffers(s).length>0&&(q?matchQ(s):((!S.chain||s.chain===S.chain)&&withinRadius(s))));
@@ -2161,7 +2230,7 @@ function viewHome(){
     ${gpsBar()}<div class="text-xs muted mb-3">${t(PROD?'gpsPrivacyProd':'gpsPrivacy')}</div>
     <div class="flex items-center justify-between text-sm font-semibold"><label for="rad">${t('radiusLabel')}</label><span class="display" id="radv">${S.radius} ${t('km')}</span></div>
     <input id="rad" type="range" min="1" max="3" step="1" value="${S.radius}" style="padding:0;border:0" oninput="setRadius(+this.value)">
-    <div class="flex flex-wrap gap-2 mt-3">${GROUPS.map(gchip).join('')}<button class="chip" onclick="setTab('retail')">🏬 ${t('navRetail')}</button></div>
+    <div class="flex flex-wrap gap-2 mt-3">${GROUPS.map(gchip).join('')}</div>
     ${fl&&useFood?`<div class="flex flex-wrap gap-2 mt-2">${['halal','veg'].map(x=>chip('dietary',x)).join('')}${['set','dessert'].map(x=>chip('category',x)).join('')}</div>`:''}
   </div>
   <div class="flex items-center justify-between gap-2 mt-4 mb-2"><div class="display text-lg">${fl?t('boxesNear'):t('anytimeTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
@@ -2534,6 +2603,7 @@ function submitRate(id){
 
 /* ---------- Condo fridge ---------- */
 function viewFridge(){
+  if(PROD) return viewComm();
   const sel=`<label class="text-sm font-semibold" for="bld">${t('yourBuilding')}</label>
     <select id="bld" onchange="pickBuilding(this.value)"><option value="">${t('pickBuilding')}</option>${BUILDINGS.map(b=>`<option value="${b.id}" ${S.building===b.id?'selected':''}>${esc(loc(b.n))}</option>`).join('')}</select>`;
   if(!S.building||!S.buildingOK||!bname(S.building)){
@@ -2585,9 +2655,95 @@ function submitPost(){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(e)||e<bkkISO()) return toast(t('expiredNo'));
   if(m==='sell'&&p<1) return toast(t('needPrice'));
   const fr=$('#pf').value, dz=$('#pd').value;
+  if(PROD) return commSubmit(ti,e,m,p,FRESH.includes(fr)?fr:'fresh',DROPS.includes(dz)?dz:DROPS[0]);
   S.posts.unshift({id:Date.now(),b:S.building,title:ti,fresh:FRESH.includes(fr)?fr:'fresh',exp:e,mode:m,price:m==='sell'?p:0,drop:DROPS.includes(dz)?dz:DROPS[0],by:(S.user.name||t('youName')).split(' ')[0],trust:S.trust,mine:true});
   S.fridgeActs++; S.points+=10; checkBadges(); save(); closeSheet(); render(); toast(t('postedToast'));
 }
+
+/* ---------- Community (condo / village / apartment / dorm) — production, server-backed ---------- */
+const COMM_KINDS=['condo','village','apartment','dorm'];
+const CM={kind:'condo',name:'',posts:null,loading:false,tried:false,posting:false,poll:0};
+try{ const j=JSON.parse(localStorage.getItem('cde-comm')||'null'); if(j&&COMM_KINDS.includes(j.kind)&&typeof j.name==='string'){ CM.kind=j.kind; CM.name=j.name.slice(0,60); } }catch(e){}
+function commSave(){ try{ localStorage.setItem('cde-comm',JSON.stringify({kind:CM.kind,name:CM.name})); }catch(e){} }
+async function commLoad(){
+  if(!CM.name||!S.user.verified||CM.loading) return; CM.loading=true;
+  try{ CM.posts=await Srv.rpc('fridge_list',{p_kind:CM.kind,p_place:CM.name}); }catch(e){ CM.posts=[]; Srv.err(e); }
+  CM.loading=false; if(S.tab==='fridge') render();
+}
+function commJoin(){
+  const k=$('#cmk').value, n=cleanAddr($('#cmn').value).slice(0,60).trim();
+  if(!COMM_KINDS.includes(k)||n.length<2||hasContact(n)) return toast(t('commNeedName'));
+  CM.kind=k; CM.name=n; CM.posts=null; CM.tried=false; commSave(); render();
+}
+function commChange(){ CM.name=''; CM.posts=null; CM.tried=false; commSave(); render(); }
+function viewComm(){
+  if(!S.user.verified) return `<div class="card p-5 text-center mt-2"><div class="text-4xl mb-2">🧊</div><div class="display text-lg">${t('commTitle')}</div><div class="text-sm muted mt-1 mb-3">${t('commLogin')}</div><button class="btn w-full" onclick="needVerify(()=>{CM.tried=false;render()})">${t('verifyBtn')}</button></div>`;
+  if(!CM.name) return `<div class="card p-4 mt-2"><div class="display text-lg mb-2">🧊 ${t('commTitle')}</div>
+    <label class="text-sm font-semibold" for="cmk">${t('commKind')}</label><select id="cmk" class="mb-2">${COMM_KINDS.map(k=>`<option value="${k}" ${CM.kind===k?'selected':''}>${t('ck_'+k)}</option>`).join('')}</select>
+    <label class="text-sm font-semibold" for="cmn">${t('commName')}</label><input id="cmn" maxlength="60" placeholder="${esc(t('commNamePh'))}" class="mb-1"><div class="text-xs muted mb-3">${t('commSame')}</div>
+    <button class="btn w-full" onclick="commJoin()">${t('commJoin')}</button></div>`;
+  if(CM.posts===null&&!CM.loading&&!CM.tried){ CM.tried=true; setTimeout(commLoad,0); }
+  const today=bkkISO(), posts=CM.posts||[];
+  return `<div class="card p-4 mt-2"><div class="flex items-center justify-between gap-2"><div class="min-w-0"><div class="text-xs muted">${t('ck_'+CM.kind)}</div><div class="display text-lg truncate">${esc(CM.name)}</div></div>
+      <div class="flex gap-2 shrink-0"><button class="chip" onclick="commChange()">${t('commChange')}</button></div></div></div>
+    <div class="flex items-center justify-between mt-4 mb-2 gap-2"><div class="display text-lg">${t('sharedTitle')}</div><div class="flex gap-2"><button class="chip" onclick="commInbox()">${t('commInbox')}</button><button class="btn py-2" onclick="newPost()">${t('newPostBtn')}</button></div></div>
+    ${CM.loading&&CM.posts===null?`<div class="card p-6 text-center muted">…</div>`:(posts.length?posts.map(p=>{
+      const days=Math.round((Date.parse(p.exp)-Date.parse(today))/864e5), soon=days<=3;
+      return `<div class="card p-4 mb-3">
+        <div class="flex justify-between gap-2"><div class="display text-lg leading-tight break-words min-w-0">${esc(p.title)}</div>
+          <div class="display text-lg shrink-0" style="color:${p.mode==='free'?'var(--jade)':'var(--text)'}">${p.mode==='free'?t('free'):'฿'+esc(p.price)}</div></div>
+        <div class="flex flex-wrap gap-1 mt-2 text-xs">
+          <span class="px-2 py-0.5 rounded-full" style="background:var(--soft)">${esc(t('fr_'+p.fresh))}</span>
+          <span class="px-2 py-0.5 rounded-full" style="background:${soon?'var(--chili)':'var(--soft)'};color:${soon?'#fff':'inherit'}">${t('expires',{d:esc(dateStr(p.exp))})}${soon?' '+t('inDays',{n:days}):''}</span>
+          <span class="px-2 py-0.5 rounded-full" style="background:var(--soft)">${t('pickupAt',{p:esc(t('dz_'+p.drop))})}</span></div>
+        <div class="flex items-center justify-between gap-2 mt-3"><div class="text-sm muted min-w-0 truncate">${esc(p.by)}${p.mine?' '+t('meTag'):''}</div>
+          <div class="flex gap-2 shrink-0">${p.mine?`<button class="chip" onclick="commDel(${+p.id})">🗑️ ${t('commDel')}</button>`:`<button class="chip" onclick="report(${+p.id})">${t('report')}</button><button class="btn py-2" onclick="chat(${+p.id})">${t('requestChat')}</button>`}</div></div></div>`;}).join(''):`<div class="card p-6 text-center muted">${t('noPosts')}</div>`)}
+    <div class="text-xs muted mt-2">${t('dropNote')}</div>`;
+}
+async function commSubmit(ti,e,m,p,fr,dz){
+  if(CM.posting) return; CM.posting=true;
+  try{ await Srv.rpc('fridge_post',{p_kind:CM.kind,p_place:CM.name,p_title:ti,p_fresh:fr,p_exp:e,p_mode:m,p_price:m==='sell'?p:0,p_drop:dz,p_by:(S.user.name||t('youName')).split(' ')[0]});
+    closeSheet(); toast(t('postedProd')); CM.posts=null; CM.tried=false; await commLoad(); }
+  catch(err){ Srv.err(err); } finally{ CM.posting=false; }
+}
+async function commDel(id){ try{ await Srv.rpc('fridge_delete',{p_id:id}); toast(t('commDeleted')); CM.posts=null; CM.tried=false; commLoad(); }catch(e){ Srv.err(e); } }
+async function commInbox(){
+  try{
+    const L=await Srv.rpc('fridge_inbox');
+    sheet(`<div class="display text-xl mb-3">${t('commInbox')}</div>${(L&&L.length)?L.map(x=>`<button class="card p-3 w-full text-left mb-2" onclick="commChat(${+x.post},'${esc(x.req)}')"><div class="font-bold truncate">${esc(x.title)}</div><div class="text-sm muted truncate">${x.mine_last?'↩ ':''}${esc(x.last)}</div></button>`).join(''):`<div class="card p-6 text-center muted">${t('commNoInbox')}</div>`}`);
+  }catch(e){ Srv.err(e); }
+}
+async function commThread(){
+  const c=window._chat; if(!c) return;
+  try{ const L=await Srv.rpc('fridge_thread',{p_post:c.id,p_req:c.req||null}); if(window._chat!==c) return; c.msgs=(L||[]).map(x=>({me:!!x.me,t:String(x.t||'')}));
+    const box=$('#msgs'); if(box){ box.innerHTML=c.msgs.length?c.msgs.map(msgHtml).join(''):`<div class="text-xs muted">${t('commAsk')}</div>`; box.scrollTop=box.scrollHeight; } }
+  catch(e){ if(e&&e.code!=='NET') clearInterval(CM.poll); }
+}
+function commChat(id,req){
+  const p=(CM.posts||[]).find(x=>x.id===id)||{id,title:'',by:'',mine:!!req,drop:'lobby'};
+  if(p.mine&&!req) return commInbox();
+  needVerify(()=>{
+    window._chat={id,req:req||null,msgs:[]}; clearInterval(CM.poll);
+    sheet(`<div class="flex items-center justify-between gap-2 mb-2"><div class="display text-lg min-w-0 truncate">${esc(p.title||'')}</div>${p.mine?'':`<button class="chip" onclick="report(${+id})">${t('report')}</button>`}</div>
+      <div class="text-xs muted mb-2">${t('chatRule')}</div>
+      <div id="msgs" class="space-y-2 mb-3" style="min-height:120px;max-height:40vh;overflow:auto"><div class="text-xs muted">${t('commAsk')}</div></div>
+      <div class="flex gap-2"><input id="cm" maxlength="300" placeholder="${t('typeMsg')}" onkeydown="if(event.key==='Enter')commSend()"><button class="btn shrink-0" onclick="commSend()">${t('send')}</button></div>
+      <button class="btn jade w-full mt-3" onclick="closeSheet();toast(t('commHandover'))">${t('handoverDone')}</button>`);
+    commThread(); CM.poll=setInterval(()=>{ if(!$('#msgs')||!window._chat||window._chat.id!==id){ clearInterval(CM.poll); return; } commThread(); },5000);
+  });
+}
+async function commSend(){
+  const inp=$('#cm'), c=window._chat; if(!inp||!c) return; const v=inp.value.trim(); if(!v) return;
+  const b=blocked(v); if(b) return toast(b);
+  inp.value='';
+  try{ await Srv.rpc('fridge_send',{p_post:c.id,p_req:c.req||null,p_body:v}); await commThread(); }catch(e){ inp.value=v; Srv.err(e); }
+}
+function commReport(id){
+  sheet(`<div class="display text-xl mb-2">${t('reportPost')}</div>
+    <select id="rr" class="mb-3">${['rr1','rr2','rr3','rr4'].map(k=>`<option>${t(k)}</option>`).join('')}</select>
+    <button class="btn w-full" onclick="commReportSend(${+id})">${t('sendReport')}</button>`);
+}
+async function commReportSend(id){ const r=$('#rr')?$('#rr').value:''; try{ await Srv.rpc('fridge_report',{p_post:id,p_reason:r}); closeSheet(); toast(t('reportSent')); CM.posts=null; CM.tried=false; commLoad(); }catch(e){ Srv.err(e); } }
 
 /* ---------- Secure chat ---------- */
 const BLOCK_WORDS=[
@@ -2605,6 +2761,7 @@ function blocked(tx){
   return '';
 }
 function chat(id){
+  if(PROD) return commChat(id);
   const p=S.posts.find(x=>x.id===id); if(!p||p.mine) return toast(t('ownPost'));
   needVerify(()=>{
     window._chat={id,msgs:[{me:false,t:t('chatHello',{title:ptitle(p),p:t('dz_'+p.drop)})}]};
@@ -2634,6 +2791,7 @@ function claim(id){
   S.claimed.push(id); S.fridgeActs++; S.kg+=0.5; S.baht+=25; S.points+=10; checkBadges(); save(); closeSheet(); render(); toast(t('ptsKg',{pts:10,kg:0.5}));
 }
 function report(id){
+  if(PROD) return commReport(id);
   const p=S.posts.find(x=>x.id===id), who=p?pby(p):t('someone');
   sheet(`<div class="display text-xl mb-2">${t('reportTitle',{n:esc(who)})}</div>
     <select id="rr" class="mb-3">${['rr1','rr2','rr3','rr4'].map(k=>`<option>${t(k)}</option>`).join('')}</select>
