@@ -1697,6 +1697,7 @@ function relistables(sh){
   return L;
 }
 function openMenuMgr(sid,tab){
+  if(PROD&&!S.user.verified) return needVerify(()=>openMenuMgr(sid,tab));            // not signed in: ask to log in instead of a dead end
   const L=mgrShops(); if(!L.length) return toast(t('notEditable'));
   const sh=L.find(x=>x.id===sid)||L[0]; MG={sid:sh.id,tab:['items','sets','boxes','daily','pay'].includes(tab)?tab:'items'}; window._pending=null; MGON=true;
   WT=sh.type; WI=sh.items;
@@ -2829,7 +2830,7 @@ function viewMe(){
   <div class="card p-3 mt-5 text-xs" style="color:${(Cloud.on||Srv.on)&&!Cloud.ro?'var(--jade)':'var(--muted)'}">${(Cloud.on||Srv.on)?(Cloud.ro?t('cloudRO'):t('cloudOn')):t('cloudOff')}</div>
   <div class="display text-lg mt-5 mb-2">${t('shopMode')}</div>
   <div class="space-y-2"><button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openRegister()"><span class="font-bold">🏪 ${t('regOpen')}</span><span class="muted text-sm">1–3</span></button>
-  <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="${mgrShops().length?`openMenuMgr(${mgrShops()[0].id})`:"toast(t('notEditable'))"}"><span class="font-bold">🍽️ ${t('regManage')}</span><span class="muted text-sm">📷 ฿</span></button>
+  <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="${mgrShops().length?`openMenuMgr(${mgrShops()[0].id})`:(PROD&&!S.user.verified?"openMenuMgr(0)":"toast(t('notEditable'))")}"><span class="font-bold">🍽️ ${t('regManage')}</span><span class="muted text-sm">📷 ฿</span></button>
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openDesk()"><span class="font-bold">📦 ${t('deskTitle')}</span>${unreadAlerts()>0?`<span class="px-2 rounded-full text-white text-xs" style="background:var(--chili)">🔔 ${unreadAlerts()}</span>`:'<span class="muted text-sm">QR</span>'}</button>
   </div>
   <div class="display text-lg mt-5 mb-2">${t('language')}</div>
