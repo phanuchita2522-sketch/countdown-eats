@@ -434,6 +434,7 @@ const T={
   reloginExisting:['บัญชี Google นี้เคยสมัครไว้แล้ว กำลังเข้าสู่ระบบด้วยบัญชีเดิม…','This Google account already exists. Signing you in…'],
   confirmReceived:['ยืนยันรับของแล้ว','I received it'],
   confirmReceivedSub:['กดเมื่อได้รับของจริงแล้วเท่านั้น โพสต์และแชทนี้จะถูกลบทันที','Only tap after you actually got the item. This post and its chat will be deleted.'],
+  chatThisPost:['แชท','Chat'],
   memberWord:['สมาชิก','Member'],
   addShopBtn:['เพิ่มร้านใหม่','Add a new shop'],
   delShopBtn:['ลบร้านนี้','Delete this shop'],
@@ -2722,7 +2723,7 @@ function viewComm(){
           <span class="px-2 py-0.5 rounded-full" style="background:${soon?'var(--chili)':'var(--soft)'};color:${soon?'#fff':'inherit'}">${t('expires',{d:esc(dateStr(p.exp))})}${soon?' '+t('inDays',{n:days}):''}</span>
           <span class="px-2 py-0.5 rounded-full" style="background:var(--soft)">${t('pickupAt',{p:esc(t('dz_'+p.drop))})}</span></div>
         <div class="flex items-center justify-between gap-2 mt-3"><div class="text-sm muted min-w-0 truncate">${esc(maskBy(p.by))}${p.mine?' '+t('meTag'):''}</div>
-          <div class="flex gap-2 shrink-0">${p.mine?`<button class="chip" onclick="commInbox(${+p.id})">${t('commInbox')}</button><button class="chip" onclick="commDel(${+p.id})">🗑️ ${t('commDel')}</button>`:`<button class="chip" onclick="report(${+p.id})">${t('report')}</button><button class="btn py-2" onclick="chat(${+p.id})">${t('requestChat')}</button>`}</div></div></div>`;}).join(''):`<div class="card p-6 text-center muted">${t('noPosts')}</div>`)}
+          <div class="flex gap-2 shrink-0">${p.mine?`<button class="chip" onclick="commDel(${+p.id})">🗑️ ${t('commDel')}</button><button class="btn py-2" onclick="commInbox(${+p.id})">💬 ${t('chatThisPost')}</button>`:`<button class="chip" onclick="report(${+p.id})">${t('report')}</button><button class="btn py-2" onclick="chat(${+p.id})">${t('requestChat')}</button>`}</div></div></div>`;}).join(''):`<div class="card p-6 text-center muted">${t('noPosts')}</div>`)}
     <div class="text-xs muted mt-2">${t('dropNote')}</div>`;
 }
 function shortName(){                                                   // what neighbours see: first name only, never an e-mail address
@@ -2741,6 +2742,7 @@ async function commDel(id){ try{ await Srv.rpc('fridge_delete',{p_id:id}); toast
 async function commInbox(pid){
   try{
     const L=await Srv.rpc('fridge_inbox',pid?{p_post:+pid}:{});
+    if(pid&&L&&L.length===1) return commChat(+pid,String(L[0].req));                      // only one person asked: open the chat straight away
     sheet(`<div class="display text-xl mb-3">${t('commInbox')}</div>${(L&&L.length)?L.map(x=>`<button class="card p-3 w-full text-left mb-2" onclick="commChat(${+x.post},'${esc(x.req)}')"><div class="font-bold truncate">${esc(x.title)}</div><div class="text-sm muted truncate">${x.mine_last?'↩ ':''}${esc(x.last)}</div></button>`).join(''):`<div class="card p-6 text-center muted">${t('commNoInbox')}</div>`}`);
   }catch(e){ Srv.err(e); }
 }
