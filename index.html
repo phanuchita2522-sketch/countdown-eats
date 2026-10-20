@@ -432,6 +432,7 @@ const T={
   commAsk:['ส่งข้อความถึงเจ้าของโพสต์ได้เลย นัดรับในจุดส่วนกลางเท่านั้น','Message the poster. Meet only in a shared area.'],
   diagBtn:['🩺 ตรวจสถานะระบบ (ส่งภาพให้ผู้พัฒนา)','🩺 System check (send a screenshot to the developer)'],
   reloginExisting:['บัญชี Google นี้เคยสมัครไว้แล้ว กำลังเข้าสู่ระบบด้วยบัญชีเดิม…','This Google account already exists. Signing you in…'],
+  memberWord:['สมาชิก','Member'],
   addShopBtn:['เพิ่มร้านใหม่','Add a new shop'],
   delShopBtn:['ลบร้านนี้','Delete this shop'],
   delShopTitle:['ลบร้าน “{n}” ?','Delete shop “{n}”?'],
@@ -2291,7 +2292,7 @@ const PHONE_RE=/^0[2-9]\d{7,8}$/;
 function syncAuth(u){                                                      // production identity = a non-anonymous Supabase (Google) account
   const ok=!!(u&&u.is_anonymous===false), prevName=S.user.name;
   S.user.verified=ok; S.user.phone='';
-  if(ok){ const m=u.user_metadata||{}; S.user.name=String(m.full_name||m.name||u.email||'').replace(/[\u0000-\u001f<>]/g,' ').slice(0,60); }
+  if(ok){ const m=u.user_metadata||{}; S.user.name=String(m.full_name||m.name||'').replace(/[\u0000-\u001f<>]/g,' ').slice(0,60); }
   else S.user.name='';
   save(); if(ok||prevName) queueRender();
 }
@@ -2718,13 +2719,19 @@ function viewComm(){
           <span class="px-2 py-0.5 rounded-full" style="background:var(--soft)">${esc(t('fr_'+p.fresh))}</span>
           <span class="px-2 py-0.5 rounded-full" style="background:${soon?'var(--chili)':'var(--soft)'};color:${soon?'#fff':'inherit'}">${t('expires',{d:esc(dateStr(p.exp))})}${soon?' '+t('inDays',{n:days}):''}</span>
           <span class="px-2 py-0.5 rounded-full" style="background:var(--soft)">${t('pickupAt',{p:esc(t('dz_'+p.drop))})}</span></div>
-        <div class="flex items-center justify-between gap-2 mt-3"><div class="text-sm muted min-w-0 truncate">${esc(p.by)}${p.mine?' '+t('meTag'):''}</div>
+        <div class="flex items-center justify-between gap-2 mt-3"><div class="text-sm muted min-w-0 truncate">${esc(maskBy(p.by))}${p.mine?' '+t('meTag'):''}</div>
           <div class="flex gap-2 shrink-0">${p.mine?`<button class="chip" onclick="commDel(${+p.id})">🗑️ ${t('commDel')}</button>`:`<button class="chip" onclick="report(${+p.id})">${t('report')}</button><button class="btn py-2" onclick="chat(${+p.id})">${t('requestChat')}</button>`}</div></div></div>`;}).join(''):`<div class="card p-6 text-center muted">${t('noPosts')}</div>`)}
     <div class="text-xs muted mt-2">${t('dropNote')}</div>`;
 }
+function shortName(){                                                   // what neighbours see: first name only, never an e-mail address
+  const n=String(S.user.name||'').replace(/[\u0000-\u001f<>]/g,' ').trim();
+  if(n&&!n.includes('@')) return n.split(/\s+/)[0].slice(0,12);
+  return t('memberWord')+(Cloud.uid?'-'+String(Cloud.uid).replace(/-/g,'').slice(0,4):'');
+}
+const maskBy=x=>{ x=String(x||''); return x.includes('@')?t('memberWord'):x; };
 async function commSubmit(ti,e,m,p,fr,dz){
   if(CM.posting) return; CM.posting=true;
-  try{ await Srv.rpc('fridge_post',{p_kind:CM.kind,p_place:CM.name,p_title:ti,p_fresh:fr,p_exp:e,p_mode:m,p_price:m==='sell'?p:0,p_drop:dz,p_by:(S.user.name||t('youName')).split(' ')[0]});
+  try{ await Srv.rpc('fridge_post',{p_kind:CM.kind,p_place:CM.name,p_title:ti,p_fresh:fr,p_exp:e,p_mode:m,p_price:m==='sell'?p:0,p_drop:dz,p_by:shortName()});
     closeSheet(); toast(t('postedProd')); CM.posts=null; CM.tried=false; await commLoad(); }
   catch(err){ Srv.err(err); } finally{ CM.posting=false; }
 }
