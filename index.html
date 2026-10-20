@@ -392,7 +392,7 @@ const T={
   menuDisclaimer:['รูปเป็นตัวอย่างเมนูของร้าน เมนูจริงในกล่องเป็นเซอร์ไพรส์ แต่จำนวนและประเภทจะตรงกับที่ระบุในเซ็ต','Photos show the shop’s regular menu. The exact dishes are a surprise, but the number and types match the set.'],
   noMenu:['ร้านนี้ยังไม่มีรูปสินค้า','This shop hasn’t added any items yet'],
   close:['ปิด','Close'],
-  shopMode:['โหมดร้านค้า (เดโม)','Shop mode (demo)'],
+  shopMode:['โหมดร้านค้า','Shop mode'],
   shopModeSub:['เฉพาะร้านของคุณที่ผ่านการตรวจสอบเท่านั้นที่แก้เมนู ราคา และเซ็ตได้','Only your own verified shops can edit the menu, prices and sets.'],
   manageMenu:['จัดการรูปเมนูร้านค้า','Manage shop menu photos'],
   selectShop:['เลือกร้าน','Select shop'],
@@ -1356,7 +1356,7 @@ function closeSheet(){ $('#layer').innerHTML=''; }
 function flashOn(){ const h=new Date(Date.now()+BKK).getUTCHours(); return (DEMO_MODE&&S.demo) || (h>=18 && h<21); }
 function nextStart(){ const b=new Date(Date.now()+BKK); let x=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate(),11,0,0); if(Date.now()>=x) x+=864e5; return x; }
 function suspended(s){ return s.trust<3.5||Cloud.flagged.has(s.id); }
-function setTab(k){ S.tab=k; if(k==='fridge'&&typeof CM!=='undefined') CM.tried=false; save(); render(); window.scrollTo(0,0); }
+function setTab(k){ if(k!==S.tab) SQ=''; S.tab=k; if(k==='fridge'&&typeof CM!=='undefined') CM.tried=false; save(); render(); window.scrollTo(0,0); }
 function timeStr(ms){ return new Date(ms).toLocaleTimeString(LOCALE[S.lang],{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}); }
 function dateStr(iso){ return new Date(iso+'T00:00:00Z').toLocaleDateString(LOCALE[S.lang],{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}); }
 function ptitle(p){ return loc(p.title); }
