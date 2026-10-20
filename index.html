@@ -432,6 +432,8 @@ const T={
   commAsk:['ส่งข้อความถึงเจ้าของโพสต์ได้เลย นัดรับในจุดส่วนกลางเท่านั้น','Message the poster. Meet only in a shared area.'],
   diagBtn:['🩺 ตรวจสถานะระบบ (ส่งภาพให้ผู้พัฒนา)','🩺 System check (send a screenshot to the developer)'],
   reloginExisting:['บัญชี Google นี้เคยสมัครไว้แล้ว กำลังเข้าสู่ระบบด้วยบัญชีเดิม…','This Google account already exists. Signing you in…'],
+  confirmReceived:['ยืนยันรับของแล้ว','I received it'],
+  confirmReceivedSub:['กดเมื่อได้รับของจริงแล้วเท่านั้น โพสต์และแชทนี้จะถูกลบทันที','Only tap after you actually got the item. This post and its chat will be deleted.'],
   memberWord:['สมาชิก','Member'],
   addShopBtn:['เพิ่มร้านใหม่','Add a new shop'],
   delShopBtn:['ลบร้านนี้','Delete this shop'],
@@ -2720,7 +2722,7 @@ function viewComm(){
           <span class="px-2 py-0.5 rounded-full" style="background:${soon?'var(--chili)':'var(--soft)'};color:${soon?'#fff':'inherit'}">${t('expires',{d:esc(dateStr(p.exp))})}${soon?' '+t('inDays',{n:days}):''}</span>
           <span class="px-2 py-0.5 rounded-full" style="background:var(--soft)">${t('pickupAt',{p:esc(t('dz_'+p.drop))})}</span></div>
         <div class="flex items-center justify-between gap-2 mt-3"><div class="text-sm muted min-w-0 truncate">${esc(maskBy(p.by))}${p.mine?' '+t('meTag'):''}</div>
-          <div class="flex gap-2 shrink-0">${p.mine?`<button class="chip" onclick="commDel(${+p.id})">🗑️ ${t('commDel')}</button>`:`<button class="chip" onclick="report(${+p.id})">${t('report')}</button><button class="btn py-2" onclick="chat(${+p.id})">${t('requestChat')}</button>`}</div></div></div>`;}).join(''):`<div class="card p-6 text-center muted">${t('noPosts')}</div>`)}
+          <div class="flex gap-2 shrink-0">${p.mine?`<button class="chip" onclick="commInbox(${+p.id})">${t('commInbox')}</button><button class="chip" onclick="commDel(${+p.id})">🗑️ ${t('commDel')}</button>`:`<button class="chip" onclick="report(${+p.id})">${t('report')}</button><button class="btn py-2" onclick="chat(${+p.id})">${t('requestChat')}</button>`}</div></div></div>`;}).join(''):`<div class="card p-6 text-center muted">${t('noPosts')}</div>`)}
     <div class="text-xs muted mt-2">${t('dropNote')}</div>`;
 }
 function shortName(){                                                   // what neighbours see: first name only, never an e-mail address
@@ -2736,9 +2738,9 @@ async function commSubmit(ti,e,m,p,fr,dz){
   catch(err){ Srv.err(err); } finally{ CM.posting=false; }
 }
 async function commDel(id){ try{ await Srv.rpc('fridge_delete',{p_id:id}); toast(t('commDeleted')); CM.posts=null; CM.tried=false; commLoad(); }catch(e){ Srv.err(e); } }
-async function commInbox(){
+async function commInbox(pid){
   try{
-    const L=await Srv.rpc('fridge_inbox');
+    const L=await Srv.rpc('fridge_inbox',pid?{p_post:+pid}:{});
     sheet(`<div class="display text-xl mb-3">${t('commInbox')}</div>${(L&&L.length)?L.map(x=>`<button class="card p-3 w-full text-left mb-2" onclick="commChat(${+x.post},'${esc(x.req)}')"><div class="font-bold truncate">${esc(x.title)}</div><div class="text-sm muted truncate">${x.mine_last?'↩ ':''}${esc(x.last)}</div></button>`).join(''):`<div class="card p-6 text-center muted">${t('commNoInbox')}</div>`}`);
   }catch(e){ Srv.err(e); }
 }
@@ -2757,7 +2759,7 @@ function commChat(id,req){
       <div class="text-xs muted mb-2">${t('chatRule')}</div>
       <div id="msgs" class="space-y-2 mb-3" style="min-height:120px;max-height:40vh;overflow:auto"><div class="text-xs muted">${t('commAsk')}</div></div>
       <div class="flex gap-2"><input id="cm" maxlength="300" placeholder="${t('typeMsg')}" onkeydown="if(event.key==='Enter')commSend()"><button class="btn shrink-0" onclick="commSend()">${t('send')}</button></div>
-      <button class="btn jade w-full mt-3" onclick="closeSheet();toast(t('commHandover'))">${t('handoverDone')}</button>`);
+      ${p.mine?'':`<button class="btn jade w-full mt-3" onclick="commClaimAsk(${+id})">✅ ${t('confirmReceived')}</button>`}`);
     commThread(); CM.poll=setInterval(()=>{ if(!$('#msgs')||!window._chat||window._chat.id!==id){ clearInterval(CM.poll); return; } commThread(); },5000);
   });
 }
@@ -2766,6 +2768,14 @@ async function commSend(){
   const b=blocked(v); if(b) return toast(b);
   inp.value='';
   try{ await Srv.rpc('fridge_send',{p_post:c.id,p_req:c.req||null,p_body:v}); await commThread(); }catch(e){ inp.value=v; Srv.err(e); }
+}
+function commClaimAsk(id){
+  sheet(`<div class="display text-xl mb-2">${t('confirmReceived')}</div><div class="text-sm muted mb-4">${t('confirmReceivedSub')}</div>
+    <div class="flex gap-2"><button class="btn ghost flex-1" onclick="closeSheet()">${t('cancel')}</button><button class="btn jade flex-1" onclick="commClaim(${+id})">${t('confirm')}</button></div>`);
+}
+async function commClaim(id){
+  try{ await Srv.rpc('fridge_claim',{p_post:id}); clearInterval(CM.poll); window._chat=null; closeSheet(); toast(t('commHandover')); CM.posts=null; CM.tried=false; commLoad(); }
+  catch(e){ Srv.err(e); }
 }
 function commReport(id){
   sheet(`<div class="display text-xl mb-2">${t('reportPost')}</div>
