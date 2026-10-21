@@ -275,6 +275,7 @@ const T={
   nameDisp:['ชื่อที่แสดง (ไม่บังคับ)','Display name (optional)'],
   nameSaved:['บันทึกชื่อแล้ว','Name saved'],
   nameBad2:['ชื่อต้องยาว 2–20 ตัวอักษร ห้ามมี @ หรือเบอร์โทร','Name must be 2–20 characters, no @ or phone numbers'],
+  loginLine:['เข้าสู่ระบบด้วย LINE','Sign in with LINE'],
   loginFail:['ล็อกอินไม่สำเร็จ ลองใหม่อีกครั้ง','Sign-in failed. Please try again.'],
   kycNoBackend:['ยังไม่ได้เชื่อมต่อระบบสมาชิกของแอป ลองใหม่ภายหลัง','The app’s account service isn’t connected yet. Please try again later.'],
   logoutBtn:['ออกจากระบบ','Sign out'],
@@ -2341,6 +2342,7 @@ function loginMenu(){
   try{ localStorage.setItem('cde-consent',TERMS_VERSION); }catch(e){}
   sheet(`<div class="display text-xl mb-3">${t('loginTitle')}</div>
     <button class="btn w-full" onclick="googleLogin()">${t('loginGoogle')}</button>
+    <button class="btn jade w-full mt-2" onclick="lineLogin()">${t('loginLine')}</button>
     <div class="text-xs muted text-center my-3">${t('loginOr')}</div>
     <input id="lem" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="${t('emailPh')}" class="mb-2">
     <button class="btn alt w-full" onclick="emailSend()">${t('emailSendBtn')}</button>`);
@@ -2402,6 +2404,13 @@ async function emailVerify(){
     Srv.refresh(true); render();
     const f=window._after; window._after=null; if(f) f();
   }catch(x){ toast(t('emailWrong')); }
+}
+async function lineLogin(){
+  const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
+  try{
+    const r=await cl.auth.signInWithOAuth({provider:'custom:line',options:{redirectTo:location.origin+location.pathname,scopes:'profile openid'}});
+    if(r&&r.error) toast(t('loginFail'));
+  }catch(e){ toast(t('loginFail')); }
 }
 async function googleLogin(){
   const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
