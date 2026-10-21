@@ -258,6 +258,23 @@ const T={
   adAppOnly:['โฆษณาและรางวัลจากการดูโฆษณามีเฉพาะในแอปมือถือ','Ads and ad rewards are only available in the mobile app.'],
   kycSubG:['ล็อกอินด้วยบัญชี Google เพื่อยืนยันตัวตนขั้นพื้นฐาน (ยืนยันว่าเป็นเจ้าของอีเมลนั้น ไม่ได้ตรวจบัตรประชาชน) บัญชีจะผูกกับ Google ทำให้ไม่เสียออเดอร์และร้านเมื่อเปลี่ยนเครื่อง','Sign in with Google for basic verification (proves you own that email; no ID check). Your account is tied to Google so you keep orders and shops when you change device.'],
   googleBtn:['ล็อกอินด้วย Google','Sign in with Google'],
+  loginTitle:['เลือกวิธีเข้าสู่ระบบ','Choose how to sign in'],
+  loginGoogle:['เข้าสู่ระบบด้วย Google','Sign in with Google'],
+  loginOr:['หรือ ใช้อีเมล (ไม่ต้องมีบัญชี Google)','or use email (no Google account needed)'],
+  emailPh:['อีเมลของคุณ','Your email'],
+  emailSendBtn:['ส่งรหัส 6 หลักไปที่อีเมล','Email me a 6-digit code'],
+  emailBad:['อีเมลไม่ถูกต้อง','Invalid email address'],
+  emailSent:['ส่งรหัสแล้ว ตรวจกล่องจดหมาย (และสแปม) ที่ {n}','Code sent. Check your inbox (and spam) at {n}'],
+  emailCodePh:['รหัส 6 หลัก','6-digit code'],
+  emailVerifyBtn:['ยืนยันรหัส','Verify code'],
+  emailWrong:['รหัสไม่ถูกต้องหรือหมดอายุ','Wrong or expired code'],
+  emailWait:['ส่งรหัสบ่อยเกินไป รอสักครู่แล้วลองใหม่','Too many requests – wait a moment and try again'],
+  emailBack:['เปลี่ยนอีเมล','Change email'],
+  nameBtn:['✏️ ตั้งชื่อที่แสดง','✏️ Set display name'],
+  namePrompt:['ชื่อที่เพื่อนบ้านและร้านค้าจะเห็น (ไม่ต้องใช้ชื่อจริง ห้ามใส่เบอร์โทร/ID)','The name neighbours and shops will see (no real name needed; no phone numbers or IDs)'],
+  nameDisp:['ชื่อที่แสดง (ไม่บังคับ)','Display name (optional)'],
+  nameSaved:['บันทึกชื่อแล้ว','Name saved'],
+  nameBad2:['ชื่อต้องยาว 2–20 ตัวอักษร ห้ามมี @ หรือเบอร์โทร','Name must be 2–20 characters, no @ or phone numbers'],
   loginFail:['ล็อกอินไม่สำเร็จ ลองใหม่อีกครั้ง','Sign-in failed. Please try again.'],
   kycNoBackend:['ยังไม่ได้เชื่อมต่อระบบสมาชิกของแอป ลองใหม่ภายหลัง','The app’s account service isn’t connected yet. Please try again later.'],
   logoutBtn:['ออกจากระบบ','Sign out'],
@@ -516,8 +533,8 @@ const T={
   regKycNote:['แอปจริงจะให้อัปโหลดบัตรประชาชน/ใบทะเบียนการค้า และผูกบัญชีธนาคารผ่านเซิร์ฟเวอร์ที่เข้ารหัส เดโมนี้ข้ามขั้นตอนนี้และไม่เก็บเอกสารใด ๆ','The real app will collect your ID / trade licence and bank account through an encrypted server. This demo skips that step and stores no documents.'],
   regSubmit:['ส่งลงทะเบียน','Submit registration'],
   regDoneTitle:['ลงทะเบียนร้านแล้ว!','Shop registered!'],
-  regDoneSub:['ร้านของคุณผ่านการตรวจสอบและเปิดรับออเดอร์ช่วง 18:00–21:00 แล้ว (เดโม: อนุมัติอัตโนมัติ)','Your shop is verified and takes orders from 18:00–21:00 (demo: auto-approved).'],
-  regPreview:['ดูตัวอย่างในโหมดเดโม','Preview in demo mode'],
+  regDoneSub:['ลงทะเบียนร้านเรียบร้อย เพิ่มสินค้าแล้วลูกค้าจะเห็นร้านในแอป','Your shop is registered. Add items and customers will see it in the app.'],
+  regPreview:['ดูหน้าแรก','Go to home'],
   otpSent:['ส่งรหัสแล้ว (เดโม: 123456)','Code sent (demo: 123456)'],
   ownShop:['นี่คือร้านของคุณ ซื้อเองไม่ได้','This is your own shop — you can’t buy from it'],
   st_expired:['หมดเวลารับ (คืนเงิน)','Expired (refunded)'],
@@ -698,9 +715,9 @@ const T={
   legalPrivacy:['นโยบายความเป็นส่วนตัว (PDPA)','Privacy Policy (PDPA)'],
   legalTerms:['ข้อตกลงการใช้งาน','Terms of Use'],
   consentTitle:['ก่อนเริ่มใช้งาน','Before you start'],
-  consentSub:['เข้าสู่ระบบด้วย Google เพื่อจองหรือขายสินค้า โปรดอ่านและยอมรับข้อตกลงและนโยบายความเป็นส่วนตัว','Sign in with Google to reserve or sell. Please read and accept the Terms and the Privacy Policy.'],
+  consentSub:['เข้าสู่ระบบเพื่อจองหรือขายสินค้า โปรดอ่านและยอมรับข้อตกลงและนโยบายความเป็นส่วนตัว','Sign in to reserve or sell. Please read and accept the Terms and the Privacy Policy.'],
   consentCheck:['ฉันอายุ 20 ปีขึ้นไป (หรือได้รับความยินยอมจากผู้ปกครอง) และยอมรับข้อตกลงการใช้งานและนโยบายความเป็นส่วนตัว','I am 20 or older (or have a guardian’s consent) and I accept the Terms of Use and the Privacy Policy'],
-  consentBtn:['ยอมรับและดำเนินการต่อ','Accept and continue'],
+  consentBtn:['ยอมรับและเลือกวิธีเข้าสู่ระบบ','Accept and choose sign-in'],
   consentOk:['ยอมรับเรียบร้อย','Accepted'],
   myData:['ข้อมูลของฉัน','My data'],
   exportBtn:['ดาวน์โหลดข้อมูลของฉัน','Download my data'],
@@ -1024,7 +1041,7 @@ function legalHtml(kind){
 function openLegal(kind,back){
   sheet(`<div class="display text-xl mb-2">${t(kind==='terms'?'legalTerms':'legalPrivacy')}</div><div class="legal text-sm" style="max-height:62vh;overflow:auto">${legalHtml(kind)}</div><button class="btn alt w-full mt-4" onclick="${back||'closeSheet()'}">${t('back')}</button>`);
 }
-let TERMS_NEXT='googleLogin()';
+let TERMS_NEXT='loginMenu()';
 function openTerms(next){
   if(typeof next==='string') TERMS_NEXT=next;
   sheet(`<div class="display text-xl mb-1">${t('consentTitle')}</div><div class="text-sm muted mb-3">${t('consentSub')}</div>
@@ -1257,7 +1274,7 @@ function copyShare(text){
   const fb=()=>{ const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(_){} ta.remove(); toast(t('shareCopied')); };
   try{ navigator.clipboard.writeText(text).then(()=>toast(t('shareCopied')),fb); }catch(e){ fb(); }
 }
-function placeLines(sh){ return [sh.addr?'📍 '+sh.addr:'',mapUrl(sh)].filter(Boolean); }
+function placeLines(sh){ return [sh.addr?'📍 '+sh.addr:'',validLL(sh.lat,sh.lng)?mapUrl(sh):''].filter(Boolean); }   // no long search URL when the shop has no coordinates
 function offerLine(sh,o){ return o.worth>o.price?t('shareDisc',{name:offerTitle(o),shop:loc(sh.name),price:o.price,worth:o.worth,pct:pct(o.worth,o.price)}):t('sharePlain',{name:offerTitle(o),shop:loc(sh.name),price:o.price}); }
 function shareShop(id){
   const sh=S.shops.find(x=>x.id===id); if(!sh) return;
@@ -2315,14 +2332,79 @@ const PHONE_RE=/^0[2-9]\d{7,8}$/;
 function syncAuth(u){                                                      // production identity = a non-anonymous Supabase (Google) account
   const ok=!!(u&&u.is_anonymous===false), prevName=S.user.name;
   S.user.verified=ok; S.user.phone='';
-  if(ok){ const m=u.user_metadata||{}; S.user.name=String(m.full_name||m.name||'').replace(/[\u0000-\u001f<>]/g,' ').slice(0,60); }
+  if(ok){ const m=u.user_metadata||{}; S.user.name=String(m.display_name||m.full_name||m.name||'').replace(/[\u0000-\u001f<>]/g,' ').slice(0,60); }
   else S.user.name='';
   save(); if(ok||prevName) queueRender();
 }
-async function googleLogin(){
-  const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
+function loginMenu(){
   const cg=$('#cgc'); if(!(cg&&cg.checked)) return toast(t('needAgree'));
   try{ localStorage.setItem('cde-consent',TERMS_VERSION); }catch(e){}
+  sheet(`<div class="display text-xl mb-3">${t('loginTitle')}</div>
+    <button class="btn w-full" onclick="googleLogin()">${t('loginGoogle')}</button>
+    <div class="text-xs muted text-center my-3">${t('loginOr')}</div>
+    <input id="lem" type="email" inputmode="email" autocomplete="email" maxlength="120" placeholder="${t('emailPh')}" class="mb-2">
+    <button class="btn alt w-full" onclick="emailSend()">${t('emailSendBtn')}</button>`);
+}
+function cleanDisp(v){                                                     // '' = empty, false = not allowed, else the cleaned name
+  const n=String(v||'').replace(/[\u0000-\u001f<>]/g,' ').replace(/\s+/g,' ').trim(); if(!n) return '';
+  if(n.length<2||n.length>20||n.includes('@')||blocked(n)) return false; return n;
+}
+function openNameEdit(){
+  sheet(`<div class="display text-xl mb-1">${t('nameBtn')}</div><div class="text-sm muted mb-3">${t('namePrompt')}</div>
+    <input id="dname" maxlength="20" autocomplete="nickname" value="${esc(S.user.name&&!S.user.name.includes('@')?S.user.name:'')}" class="mb-3">
+    <button class="btn w-full" onclick="saveName()">${t('confirm')}</button>`);
+}
+async function saveName(){
+  const nm=cleanDisp(($('#dname')||{}).value); if(!nm) return toast(t('nameBad2'));
+  try{
+    const r=await Cloud.sb.auth.updateUser({data:{display_name:nm}});
+    if(r&&r.error) return toast(t('loginFail'));
+    S.user.name=nm; save(); closeSheet(); toast(t('nameSaved')); render();
+  }catch(e){ toast(t('loginFail')); }
+}
+let EM={mode:'',email:''};
+async function emailSend(){
+  const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
+  const e=String(($('#lem')||{}).value||'').trim().toLowerCase();
+  if(!/^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/.test(e)||e.length>120) return toast(t('emailBad'));
+  if(emailSend.busy) return; emailSend.busy=true;
+  try{
+    let mode='email_change', r;
+    if(Cloud.sbUser&&Cloud.sbUser.is_anonymous){ r=await cl.auth.updateUser({email:e}); }                 // keeps this user's id (orders/shops stay)
+    if(!r||r.error){
+      const m=String(r&&r.error&&r.error.message||'');
+      if(r&&r.error&&/rate|seconds|too many|limit/i.test(m)) { toast(t('emailWait')); return; }
+      mode='email'; r=await cl.auth.signInWithOtp({email:e,options:{shouldCreateUser:true}});            // existing email -> sign in to that account
+    }
+    if(r&&r.error){ toast(/rate|seconds|too many|limit/i.test(String(r.error.message||''))?t('emailWait'):t('loginFail')); return; }
+    EM={mode,email:e};
+    sheet(`<div class="display text-xl mb-1">${t('loginTitle')}</div>
+      <div class="text-sm muted mb-3">${t('emailSent',{n:esc(e)})}</div>
+      <input id="lcode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="${t('emailCodePh')}" class="mb-2">
+      <input id="lname" maxlength="20" autocomplete="nickname" placeholder="${t('nameDisp')}" class="mb-2">
+      <button class="btn w-full" onclick="emailVerify()">${t('emailVerifyBtn')}</button>
+      <button class="btn ghost w-full mt-2" onclick="loginMenu()">${t('emailBack')}</button>`);
+  }catch(x){ toast(t('loginFail')); }
+  finally{ emailSend.busy=false; }
+}
+async function emailVerify(){
+  const cl=Cloud.sb; if(!cl||!EM.email) return;
+  const tok=String(($('#lcode')||{}).value||'').replace(/\D/g,'');
+  if(tok.length<6) return toast(t('emailWrong'));
+  try{
+    let r=await cl.auth.verifyOtp({email:EM.email,token:tok,type:EM.mode});
+    if((r.error||!r.data||!r.data.user)&&EM.mode==='email_change') r=await cl.auth.verifyOtp({email:EM.email,token:tok,type:'email'});
+    if(r.error||!r.data||!r.data.user||r.data.user.is_anonymous) return toast(t('emailWrong'));
+    Cloud.sbUser=r.data.user; Cloud.uid=String(r.data.user.id);
+    const nm=cleanDisp(($('#lname')||{}).value);
+    if(nm&&nm!==false){ try{ const u=await cl.auth.updateUser({data:{display_name:nm}}); if(u&&u.data&&u.data.user) r.data.user=u.data.user; }catch(e){} }
+    syncAuth(r.data.user); await Srv.consentAfterLogin(); closeSheet(); toast(t('verifiedToast'));
+    Srv.refresh(true); render();
+    const f=window._after; window._after=null; if(f) f();
+  }catch(x){ toast(t('emailWrong')); }
+}
+async function googleLogin(){
+  const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
   try{
     const o={provider:'google',options:{redirectTo:location.origin+location.pathname}};
     const r=(Cloud.sbUser&&Cloud.sbUser.is_anonymous)?await cl.auth.linkIdentity(o):await cl.auth.signInWithOAuth(o);   // linking keeps the same user id (orders/shops stay)
@@ -2337,7 +2419,7 @@ async function logout(){
 function needVerify(then){
   if(S.user.verified) return then();
   window._after=then;
-  if(PROD){ openTerms('googleLogin()'); return; }
+  if(PROD){ openTerms('loginMenu()'); return; }
   sheet(`<div class="display text-xl mb-1">${t('kycTitle')}</div>
     <div class="text-sm muted mb-4">${t('kycSub')}</div>
     <label class="text-sm font-semibold" for="ph">${t('phone')}</label>
@@ -2907,6 +2989,7 @@ function viewMe(){
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="${mgrShops().length?`openMenuMgr(${mgrShops()[0].id})`:(PROD&&!S.user.verified?"openMenuMgr(0)":"toast(t('notEditable'))")}"><span class="font-bold">🍽️ ${t('regManage')}</span><span class="muted text-sm">📷 ฿</span></button>
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openDesk()"><span class="font-bold">📦 ${t('deskTitle')}</span>${unreadAlerts()>0?`<span class="px-2 rounded-full text-white text-xs" style="background:var(--chili)">🔔 ${unreadAlerts()}</span>`:'<span class="muted text-sm">QR</span>'}</button>
   </div>
+  ${PROD&&S.user.verified?`<button class="card p-4 w-full text-left font-bold mt-3" onclick="openNameEdit()">${t('nameBtn')}${S.user.name&&!S.user.name.includes('@')?` <span class="muted font-normal">· ${esc(S.user.name)}</span>`:''}</button>`:''}
   <button class="card p-4 w-full text-left font-bold mt-3" onclick="shareLink(t('shareAppText'))">${t('shareApp')}</button>
   <div class="display text-lg mt-5 mb-2">${t('language')}</div>
   <button class="card p-4 w-full text-left flex items-center justify-between" onclick="openLang()"><span class="font-bold">🌐 ${LNAME[S.lang]}</span><span class="muted text-sm">TH · EN</span></button>
