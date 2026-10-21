@@ -1068,6 +1068,8 @@ const Srv={
     try{
       const cfg=window.CDE_SUPABASE; if(!(cfg&&cfg.url&&cfg.key)) return;
       if(!window.supabase){ await new Promise((ok,no)=>{ const e=document.createElement('script'); e.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'; e.onload=ok; e.onerror=no; document.head.appendChild(e); }); }
+      const em=/[?&#]error_description=([^&]+)/.exec(location.search+location.hash);                  // show why a social login came back with an error
+      if(em&&!/identity_already_exists|Identity.*already/i.test(decodeURIComponent(location.search+location.hash))){ try{ const msg=decodeURIComponent(em[1].replace(/\+/g,' ')).slice(0,140); setTimeout(()=>{ toast(t('loginFail')+' — '+msg); },1200); history.replaceState(null,'',location.pathname); }catch(e){} }
       const already=/identity_already_exists/.test(location.search+location.hash);       // this Google account already belongs to an older user: sign in as that user instead of linking
       if(already){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
       const cl=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
