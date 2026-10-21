@@ -434,6 +434,16 @@ const T={
   reloginExisting:['บัญชี Google นี้เคยสมัครไว้แล้ว กำลังเข้าสู่ระบบด้วยบัญชีเดิม…','This Google account already exists. Signing you in…'],
   confirmReceived:['ยืนยันรับของแล้ว','I received it'],
   confirmReceivedSub:['กดเมื่อได้รับของจริงแล้วเท่านั้น โพสต์และแชทนี้จะถูกลบทันที','Only tap after you actually got the item. This post and its chat will be deleted.'],
+  quickReq:['ขอรับของชิ้นนี้','Request this item'],
+  quickReqMsg:['สนใจรับ “{n}” ค่ะ/ครับ นัดรับได้เมื่อไหร่ดี?','I’d like “{n}”. When can I pick it up?'],
+  commNoInboxPost:['ยังไม่มีใครขอรับโพสต์นี้ เมื่อมีคนกด “ขอรับ / แชท” ข้อความจะมาขึ้นที่นี่ และคุณตอบได้ทันที','No one has asked for this post yet. When someone taps “Request / Chat”, their message appears here and you can reply.'],
+  shareBtn:['แชร์','Share'],
+  shareApp:['📤 ชวนเพื่อนใช้แอป','📤 Invite friends'],
+  shareTitle:['แชร์ลิงก์','Share link'],
+  shareCopy:['คัดลอกลิงก์','Copy link'],
+  shareCopied:['คัดลอกลิงก์แล้ว','Link copied'],
+  shareAppText:['CountDown Eats — ช่วยกันกู้อาหารและของเหลือ ราคาพิเศษใกล้คุณ','CountDown Eats — rescue surplus food & goods near you'],
+  shareShopText:['{n} มีของลดราคาที่ CountDown Eats','{n} has discounted items on CountDown Eats'],
   chatThisPost:['แชท','Chat'],
   memberWord:['สมาชิก','Member'],
   addShopBtn:['เพิ่มร้านใหม่','Add a new shop'],
@@ -683,6 +693,7 @@ const T={
   errNotFound:['ไม่พบรายการนี้','Not found'],
   errState:['ทำรายการนี้ไม่ได้ในสถานะปัจจุบัน (หากจะลบบัญชี ต้องจบหรือยกเลิกคำสั่งซื้อที่ค้างก่อน)','Not possible in the current state (to delete your account, finish or cancel active orders first)'],
   errBadItem:['ข้อมูลสินค้าไม่ถูกต้อง ตรวจชนิดสินค้า ราคา จำนวน และเลขทะเบียน อย.','Item details are invalid – check type, price, quantity and registration number'],
+  booking:['กำลังจอง… รอสักครู่','Reserving… one moment'],
   errNet:['เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ลองใหม่อีกครั้ง','Could not reach the server – try again'],
   legalPrivacy:['นโยบายความเป็นส่วนตัว (PDPA)','Privacy Policy (PDPA)'],
   legalTerms:['ข้อตกลงการใช้งาน','Terms of Use'],
@@ -1056,7 +1067,7 @@ const Srv={
     }catch(e){ this.on=false; queueRender(); }
   },
   async rpc(fn,args){
-    const r=await Cloud.sb.rpc(fn,args||{});
+    const r=await Promise.race([Cloud.sb.rpc(fn,args||{}),new Promise((_,rej)=>setTimeout(()=>rej({code:'NET',n:0,timeout:true}),20000))]);   // never hang silently
     if(r.error){ const m=/CDE_ERR:([A-Z_]+):(-?\d+)/.exec(r.error.message||''); throw {code:m?m[1]:'NET',n:m?+m[2]:0}; }
     return r.data;
   },
@@ -1139,12 +1150,12 @@ const Srv={
   },
   async pay(sid,kind,id,qty){
     if(this.busy) return; this.busy=true;
-    try{
+    try{ toast(t('booking')); const b=document.querySelector('#layer .btn'); if(b){ b.disabled=true; b.style.opacity='.6'; }
       const r=await this.rpc('place_order',{p_shop:sid,p_lk:kind,p_lid:id,p_qty:qty});
       const ord=this.merge(r); BUY.qty=1; BUY.key=''; closeSheet(); S.tab='orders'; save(); render(); this.pullShops(false);
       if(ord&&ord.status==='pending'){ toast(t('payReserved',{m:15})); openPay(ord.id); } else { toast(t('reservedToast')); await Ads.interstitial(); }
     }catch(e){ this.err(e); if(['SOLD_OUT','ENDED','STOCK_LEFT','CLOSED','SUSPENDED'].includes(e.code)){ closeSheet(); this.pullShops(false); } }
-    finally{ this.busy=false; }
+    finally{ this.busy=false; const b=document.querySelector('#layer .btn'); if(b){ b.disabled=false; b.style.opacity=''; } }
   },
   async markPaid(oid){
     try{ const r=await this.rpc('mark_paid',{p_order:oid}); this.merge(r); closeSheet(); render(); toast(t('paySent')); await Ads.interstitial(); }
@@ -1231,28 +1242,37 @@ function getPos(ok){
   if(!navigator.geolocation) return toast(t('locFail'));
   navigator.geolocation.getCurrentPosition(p=>ok(Math.round(p.coords.latitude*1e5)/1e5,Math.round(p.coords.longitude*1e5)/1e5),()=>toast(t('locFail')),{enableHighAccuracy:true,timeout:10000});
 }
-async function doShare(title,text){
-  try{ if(navigator.share){ await navigator.share({title,text}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
-  try{ await navigator.clipboard.writeText(text); }
-  catch(e){ const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(_){} ta.remove(); }
-  toast(t('copied'));
+async function doShare(title,text,url){
+  url=url||baseUrl(); const full=text+'\n'+url;                                  // always include the app link so friends can open it
+  try{ if(navigator.share&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){ await navigator.share({title,text:full}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  const u=encodeURIComponent(url);
+  sheet(`<div class="display text-xl mb-3">${t('shareTitle')}</div>
+    <div class="grid grid-cols-1 gap-2">
+      <a class="btn jade text-center" target="_blank" rel="noopener" href="https://line.me/R/msg/text/?${encodeURIComponent(full)}">LINE</a>
+      <a class="btn text-center" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=${u}&quote=${encodeURIComponent(text)}">Facebook / Messenger</a>
+      <button class="btn alt" onclick="copyShare(decodeURIComponent('${encodeURIComponent(full)}'))">${t('shareCopy')}</button>
+    </div><pre class="text-xs muted mt-3" style="white-space:pre-wrap;word-break:break-word">${esc(full)}</pre>`);
+}
+function copyShare(text){
+  const fb=()=>{ const ta=document.createElement('textarea'); ta.value=text; ta.style.cssText='position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(_){} ta.remove(); toast(t('shareCopied')); };
+  try{ navigator.clipboard.writeText(text).then(()=>toast(t('shareCopied')),fb); }catch(e){ fb(); }
 }
 function placeLines(sh){ return [sh.addr?'📍 '+sh.addr:'',mapUrl(sh)].filter(Boolean); }
 function offerLine(sh,o){ return o.worth>o.price?t('shareDisc',{name:offerTitle(o),shop:loc(sh.name),price:o.price,worth:o.worth,pct:pct(o.worth,o.price)}):t('sharePlain',{name:offerTitle(o),shop:loc(sh.name),price:o.price}); }
 function shareShop(id){
   const sh=S.shops.find(x=>x.id===id); if(!sh) return;
   const lines=[ (sh.emoji||'')+' '+loc(sh.name), ...liveOffers(sh).filter(o=>o.left>0).slice(0,4).map(o=>'• '+offerLine(sh,o)), ...placeLines(sh) ];
-  doShare(loc(sh.name),lines.join('\n'));
+  doShare(loc(sh.name),lines.join('\n'),baseUrl()+'?shop='+sh.id);
 }
 function shareOffer(sid,kind,id){
   const sh=S.shops.find(x=>x.id===sid), o=sh&&offerOf(sh,kind,id); if(!o) return;
-  doShare(offerTitle(o),[offerLine(sh,o),...placeLines(sh)].join('\n'));
+  doShare(offerTitle(o),[offerLine(sh,o),...placeLines(sh)].join('\n'),baseUrl()+'?shop='+sh.id);
 }
 function shareOrder(id){
   const o=S.orders.find(x=>x.id===id&&x.buyer==='me'); if(!o) return;
   const sh=S.shops.find(x=>x.id===o.shopId)||{name:o.name};
   const line=o.worth>o.price?t('shareDisc',{name:orderTitle(o),shop:loc(o.name),price:o.price,worth:o.worth,pct:pct(o.worth,o.price)}):t('sharePlain',{name:orderTitle(o),shop:loc(o.name),price:o.price});
-  doShare(loc(o.name),[line,...placeLines(sh)].join('\n'));
+  doShare(loc(o.name),[line,...placeLines(sh)].join('\n'),o.shopId?baseUrl()+'?shop='+o.shopId:undefined);
 }
 let SQ='';
 const normQ=v=>String(v||'').toLowerCase().normalize('NFKC').trim();
@@ -2686,6 +2706,14 @@ async function runDiag(){
   await call('fridge_list',{p_kind:'condo',p_place:'test'});
   add('time',new Date().toISOString()); show();
 }
+/* ---------- Share links (LINE / Messenger / Facebook / copy) ---------- */
+const baseUrl=()=>location.origin+location.pathname;
+const shareLink=(text,url)=>doShare('CountDown Eats',text,url);
+function openSharedShop(){                                                  // opened from a shared link: ?shop=ID
+  let id=0; try{ id=+new URLSearchParams(location.search).get('shop')||0; }catch(e){}
+  if(!id) return; try{ history.replaceState(null,'',location.pathname); }catch(e){}
+  let n=0; const tm=setInterval(()=>{ n++; if(S.shops.some(x=>x.id===id)){ clearInterval(tm); openShop(id); } else if(n>20) clearInterval(tm); },500);
+}
 /* ---------- Community (condo / village / apartment / dorm) — production, server-backed ---------- */
 const COMM_KINDS=['condo','village','apartment','dorm'];
 const CM={kind:'condo',name:'',posts:null,loading:false,tried:false,posting:false,poll:0};
@@ -2743,12 +2771,13 @@ async function commInbox(pid){
   try{
     const L=await Srv.rpc('fridge_inbox',pid?{p_post:+pid}:{});
     if(pid&&L&&L.length===1) return commChat(+pid,String(L[0].req));                      // only one person asked: open the chat straight away
-    sheet(`<div class="display text-xl mb-3">${t('commInbox')}</div>${(L&&L.length)?L.map(x=>`<button class="card p-3 w-full text-left mb-2" onclick="commChat(${+x.post},'${esc(x.req)}')"><div class="font-bold truncate">${esc(x.title)}</div><div class="text-sm muted truncate">${x.mine_last?'↩ ':''}${esc(x.last)}</div></button>`).join(''):`<div class="card p-6 text-center muted">${t('commNoInbox')}</div>`}`);
+    sheet(`<div class="display text-xl mb-3">${t('commInbox')}</div>${(L&&L.length)?L.map(x=>`<button class="card p-3 w-full text-left mb-2" onclick="commChat(${+x.post},'${esc(x.req)}')"><div class="font-bold truncate">${esc(x.title)}</div><div class="text-sm muted truncate">${x.mine_last?'↩ ':''}${esc(x.last)}</div></button>`).join(''):`<div class="card p-6 text-center muted">${t(pid?'commNoInboxPost':'commNoInbox')}</div>`}`);
   }catch(e){ Srv.err(e); }
 }
 async function commThread(){
   const c=window._chat; if(!c) return;
   try{ const L=await Srv.rpc('fridge_thread',{p_post:c.id,p_req:c.req||null}); if(window._chat!==c) return; c.msgs=(L||[]).map(x=>({me:!!x.me,t:String(x.t||'')}));
+    const rb=$('#reqbtn'); if(rb) rb.style.display=c.msgs.length?'none':'block';
     const box=$('#msgs'); if(box){ box.innerHTML=c.msgs.length?c.msgs.map(msgHtml).join(''):`<div class="text-xs muted">${t('commAsk')}</div>`; box.scrollTop=box.scrollHeight; } }
   catch(e){ if(e&&e.code!=='NET') clearInterval(CM.poll); }
 }
@@ -2756,14 +2785,19 @@ function commChat(id,req){
   const p=(CM.posts||[]).find(x=>x.id===id)||{id,title:'',by:'',mine:!!req,drop:'lobby'};
   if(p.mine&&!req) return commInbox();
   needVerify(()=>{
-    window._chat={id,req:req||null,msgs:[]}; clearInterval(CM.poll);
+    window._chat={id,req:req||null,msgs:[],title:p.title||''}; clearInterval(CM.poll);
     sheet(`<div class="flex items-center justify-between gap-2 mb-2"><div class="display text-lg min-w-0 truncate">${esc(p.title||'')}</div>${p.mine?'':`<button class="chip" onclick="report(${+id})">${t('report')}</button>`}</div>
       <div class="text-xs muted mb-2">${t('chatRule')}</div>
       <div id="msgs" class="space-y-2 mb-3" style="min-height:120px;max-height:40vh;overflow:auto"><div class="text-xs muted">${t('commAsk')}</div></div>
+      ${p.mine?'':`<button id="reqbtn" class="btn w-full mb-2" onclick="commQuickReq()">🙋 ${t('quickReq')}</button>`}
       <div class="flex gap-2"><input id="cm" maxlength="300" placeholder="${t('typeMsg')}" onkeydown="if(event.key==='Enter')commSend()"><button class="btn shrink-0" onclick="commSend()">${t('send')}</button></div>
       ${p.mine?'':`<button class="btn jade w-full mt-3" onclick="commClaimAsk(${+id})">✅ ${t('confirmReceived')}</button>`}`);
     commThread(); CM.poll=setInterval(()=>{ if(!$('#msgs')||!window._chat||window._chat.id!==id){ clearInterval(CM.poll); return; } commThread(); },5000);
   });
+}
+async function commQuickReq(){
+  const c=window._chat; if(!c||c.req) return;
+  try{ await Srv.rpc('fridge_send',{p_post:c.id,p_req:null,p_body:t('quickReqMsg',{n:c.title}).slice(0,300)}); await commThread(); }catch(e){ Srv.err(e); }
 }
 async function commSend(){
   const inp=$('#cm'), c=window._chat; if(!inp||!c) return; const v=inp.value.trim(); if(!v) return;
@@ -2873,6 +2907,7 @@ function viewMe(){
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="${mgrShops().length?`openMenuMgr(${mgrShops()[0].id})`:(PROD&&!S.user.verified?"openMenuMgr(0)":"toast(t('notEditable'))")}"><span class="font-bold">🍽️ ${t('regManage')}</span><span class="muted text-sm">📷 ฿</span></button>
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openDesk()"><span class="font-bold">📦 ${t('deskTitle')}</span>${unreadAlerts()>0?`<span class="px-2 rounded-full text-white text-xs" style="background:var(--chili)">🔔 ${unreadAlerts()}</span>`:'<span class="muted text-sm">QR</span>'}</button>
   </div>
+  <button class="card p-4 w-full text-left font-bold mt-3" onclick="shareLink(t('shareAppText'))">${t('shareApp')}</button>
   <div class="display text-lg mt-5 mb-2">${t('language')}</div>
   <button class="card p-4 w-full text-left flex items-center justify-between" onclick="openLang()"><span class="font-bold">🌐 ${LNAME[S.lang]}</span><span class="muted text-sm">TH · EN</span></button>
   <div class="display text-lg mt-5 mb-2">${t('safety')}</div>
@@ -2975,7 +3010,7 @@ function sanitizeState(){
   cleanOrderFn=cleanOrder; S.orders=arr(S.orders).map(cleanOrder).filter(Boolean).slice(0,200);
 }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const lb=document.getElementById('lb'); if(lb) lb.remove(); else closeSheet(); } });
-initData(); Ads.init(); render(); if(PROD) Srv.init(); else Cloud.init();
+initData(); Ads.init(); render(); if(PROD) Srv.init(); else Cloud.init(); openSharedShop();
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol==='https:') addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
