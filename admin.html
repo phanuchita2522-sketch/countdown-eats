@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>หลังบ้านผู้ดูแล</title>
+<style>
+:root{--bg:#fff7e8;--card:#fff;--ink:#1b1230;--muted:#6f6680;--line:#eadcc0;--chili:#e84b34;--jade:#12a06f;--warn:#b54708}
+@media (prefers-color-scheme:dark){:root{--bg:#171021;--card:#221a30;--ink:#f4eefc;--muted:#a79bbd;--line:#3a2f4d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,"Noto Sans Thai",sans-serif;padding:16px;max-width:760px;margin-inline:auto}
+h1{font-size:22px;margin:0 0 4px} h2{font-size:18px;margin:24px 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.muted{color:var(--muted);font-size:14px}.big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:var(--chili);color:#fff}
+button.ok{background:var(--jade)} button.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)} button:disabled{opacity:.5;cursor:default}
+input{font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card);color:var(--ink);width:100%}
+label{display:block;font-size:14px;font-weight:600;margin:8px 0 3px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:520px){.grid{grid-template-columns:1fr}}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--line)}
+#msg{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:14px;display:none;max-width:90%}
+.hide{display:none}
+</style>
+</head>
+<body>
+<h1>🛠️ หลังบ้านผู้ดูแล</h1>
+<div class="muted">CountDown Eats · เฉพาะผู้ดูแลเท่านั้น</div>
+
+<div id="gate" class="card" style="margin-top:14px">กำลังตรวจสอบสิทธิ์…</div>
+
+<div id="app" class="hide">
+  <h2>รออนุมัติเติมเครดิต <span id="pcount" class="tag">0</span></h2>
+  <div class="muted" style="margin-bottom:8px">ตรวจในแอปธนาคารของคุณว่ามีเงินเข้า <b>ตรงยอดรวมสตางค์</b> ตามรายการ แล้วจึงกดอนุมัติ ยอดสตางค์ใช้จับคู่เท่านั้น เครดิตที่เติมคิดเป็นบาทเต็ม</div>
+  <div id="pending"></div>
+
+  <h2>ตั้งค่าระบบค่าบริการ</h2>
+  <div class="card">
+    <div class="row"><div><b>เก็บค่าบริการจากเครดิตร้านค้า</b><div class="muted" id="onhint"></div></div><button id="tog" class="alt" onclick="toggleWallet()">…</button></div>
+    <div class="grid">
+      <div><label for="fp">อัตราค่าบริการ (%)</label><input id="fp" inputmode="decimal"></div>
+      <div><label for="fm">ขั้นต่ำต่อออเดอร์ (บาท)</label><input id="fm" inputmode="decimal"></div>
+      <div><label for="pp">พร้อมเพย์รับเติมเครดิต (เบอร์ 10 หลัก / บัตร 13 หลัก)</label><input id="pp" inputmode="numeric" autocomplete="off"></div>
+      <div><label for="pn">ชื่อบัญชีที่แสดงให้ร้านเห็น</label><input id="pn" maxlength="60" autocomplete="off"></div>
+    </div>
+    <h2 style="margin-top:16px">ข้อมูลผู้ให้บริการ / ภาษี (ขึ้นในใบเสร็จ)</h2>
+    <div class="muted" style="margin-bottom:6px">ตอนเป็นบุคคลธรรมดา: ใส่ชื่อ-ที่อยู่ของคุณ ปิด VAT · เมื่อจดบริษัท/จด VAT: เปลี่ยนชื่อ เลขผู้เสียภาษี ที่อยู่ แล้วเปิด VAT ใบเสร็จที่ออกไปแล้วไม่เปลี่ยน</div>
+    <div class="grid">
+      <div><label for="vn">ชื่อผู้ให้บริการ [PROVIDER_NAME]</label><input id="vn" maxlength="80" autocomplete="off"></div>
+      <div><label for="vt">เลขประจำตัวผู้เสียภาษี 13 หลัก [TAX_ID]</label><input id="vt" inputmode="numeric" maxlength="13" autocomplete="off"></div>
+      <div><label for="vb">รหัสสาขา 5 หลัก (สำนักงานใหญ่ = 00000)</label><input id="vb" inputmode="numeric" maxlength="5" autocomplete="off"></div>
+      <div><label for="va">ที่อยู่</label><input id="va" maxlength="200" autocomplete="off"></div>
+      <div><label for="vr">อัตรา VAT (%)</label><input id="vr" inputmode="decimal"></div>
+      <div><label for="sa">ตรวจสลิปอัตโนมัติ (ต้องตั้ง Edge Function ก่อน)</label><select id="sa"><option value="0">ปิด (แอดมินอนุมัติเอง)</option><option value="1">เปิด</option></select></div>
+      <div><label for="vg">จดทะเบียน VAT แล้ว?</label><select id="vg"><option value="0">ยังไม่จด (VAT = 0)</option><option value="1">จดแล้ว (ราคารวม VAT)</option></select></div>
+    </div>
+    <button style="margin-top:10px" onclick="saveCfg()">บันทึกการตั้งค่า</button>
+  </div>
+
+  <h2>แจก/ปรับเครดิตด้วยตนเอง</h2>
+  <div class="card">
+    <div class="grid">
+      <div><label for="aw">อีเมล หรือ uid ของร้าน</label><input id="aw" autocomplete="off"></div>
+      <div><label for="aa">จำนวน (บาท, ติดลบ = หักออก)</label><input id="aa" inputmode="decimal"></div>
+    </div>
+    <label for="an">หมายเหตุ</label><input id="an" maxlength="80" placeholder="เช่น เครดิตต้อนรับ">
+    <button style="margin-top:10px" onclick="adjust()">ปรับเครดิต</button>
+  </div>
+
+  <h2>เครดิตร้านค้า (เรียงจากน้อย)</h2>
+  <div id="wallets"></div>
+
+  <h2>ประวัติอนุมัติล่าสุด</h2>
+  <div id="recent"></div>
+
+  <h2>ตรวจสลิปอัตโนมัติ (เตรียมไว้)</h2>
+  <div class="card muted">ช่อง "เลขอ้างอิงสลิป" ตอนอนุมัติ จะถูกบันทึกและห้ามซ้ำกัน (กันใช้สลิปเดียวเติมหลายครั้ง) ภายหลังเชื่อมบริการตรวจสลิปได้โดยไม่ต้องแก้หน้านี้ ดูขั้นตอนในไฟล์ <b>ADMIN-TH.md</b></div>
+</div>
+<div id="msg"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function msg(t){ const m=$('#msg'); m.textContent=t; m.style.display='block'; clearTimeout(msg.t); msg.t=setTimeout(()=>m.style.display='none',3200); }
+const fmtT=ts=>new Date(+ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'});
+const baht=n=>'฿'+(+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+let sb=null, DATA=null;
+async function rpc(fn,args){
+  const r=await sb.rpc(fn,args||{});
+  if(r.error){ const m=/CDE_ERR:([A-Z_]+)/.exec(r.error.message||''); const e=new Error(m?m[1]:(r.error.message||'ERR')); e.code=m?m[1]:'ERR'; throw e; }
+  return r.data;
+}
+function errText(e){ return ({AUTH:'ไม่มีสิทธิ์ผู้ดูแล',BAD_INPUT:'ข้อมูลไม่ถูกต้อง',NOT_FOUND:'ไม่พบบัญชีนี้'})[e.code]||('ผิดพลาด: '+String(e.message||'').slice(0,80)); }
+async function init(){
+  const g=$('#gate');
+  try{
+    const cfg=window.CDE_SUPABASE; if(!(cfg&&cfg.url&&cfg.key)){ g.textContent='ยังไม่ได้ตั้งค่า config.js'; return; }
+    sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
+    const ses=(await sb.auth.getSession()).data.session;
+    if(!ses||ses.user.is_anonymous){ g.innerHTML='ยังไม่ได้ล็อกอิน — เปิดแอปหลักก่อน ล็อกอินด้วยบัญชีผู้ดูแล แล้วเปิดหน้านี้อีกครั้ง (ต้องเป็นเบราว์เซอร์เดียวกัน)<br><br><a href="./">เปิดแอป</a>'; return; }
+    await load(); g.classList.add('hide'); $('#app').classList.remove('hide');
+  }catch(e){ g.textContent=(e.code==='AUTH')?'บัญชีนี้ไม่ใช่ผู้ดูแล (ดูขั้นตอนตั้งแอดมินใน ADMIN-TH.md)':errText(e); }
+}
+async function load(){ DATA=await rpc('admin_overview'); draw(); }
+function draw(){
+  const d=DATA, c=d.cfg||{};
+  $('#pcount').textContent=d.pending.length;
+  $('#pending').innerHTML=d.pending.length?d.pending.map(p=>`<div class="card">
+    <div class="row"><div><div class="big">${baht(p.amount)}</div><div>${esc(p.who)}</div><div class="muted">ร้าน: ${esc((p.shops||[]).join(', ')||'-')} · ${fmtT(p.ts)}</div></div>
+    <div style="min-width:170px"><input id="slip${p.id}" placeholder="เลขอ้างอิงสลิป (ถ้ามี)" maxlength="60" autocomplete="off"><div class="row" style="margin-top:6px;justify-content:flex-end"><button class="alt" onclick="decide(${p.id},false)">ปฏิเสธ</button><button class="ok" onclick="decide(${p.id},true,${p.amount})">อนุมัติ</button></div></div></div></div>`).join(''):'<div class="card muted">ไม่มีคำขอรออนุมัติ</div>';
+  const on=c.wallet_on==='1'; $('#tog').textContent=on?'ปิดระบบ':'เปิดระบบ'; $('#tog').className=on?'':'ok'; $('#onhint').textContent=on?'เปิดอยู่ — ร้านที่เครดิตหมดจะถูกซ่อนและรับจองไม่ได้':'ปิดอยู่ — ร้านใช้ฟรี ไม่มีการหักเครดิต';
+  $('#fp').value=c.fee_pct||'10'; $('#fm').value=c.fee_min||'0'; $('#pp').value=c.platform_pp||''; $('#pn').value=c.platform_name||''; $('#vn').value=c.provider_name||''; $('#vt').value=c.provider_tax_id||''; $('#vb').value=c.provider_branch||'00000'; $('#va').value=c.provider_address||''; $('#vr').value=c.vat_rate||'7'; $('#vg').value=c.vat_registered==='1'?'1':'0'; $('#sa').value=c.slip_auto==='1'?'1':'0';
+  $('#wallets').innerHTML=d.wallets.length?d.wallets.map(w=>`<div class="card row"><span>${esc(w.who)}</span><b style="color:${w.balance<=0?'var(--chili)':'inherit'}">${baht(w.balance)}</b></div>`).join(''):'<div class="card muted">ยังไม่มีร้านที่เติมเครดิต</div>';
+  const st={approved:'อนุมัติ',rejected:'ปฏิเสธ',expired:'หมดอายุ'};
+  $('#recent').innerHTML=d.recent.length?d.recent.map(r=>`<div class="card row"><span>${esc(r.who)} <span class="muted">${fmtT(r.ts)}</span></span><span>${baht(r.amount)} <span class="tag">${st[r.status]||r.status}</span></span></div>`).join(''):'<div class="card muted">ยังไม่มีประวัติ</div>';
+}
+async function decide(id,ok,amount){
+  if(!confirm(ok?`ยืนยันว่าเงิน ${baht(amount)} เข้าบัญชีแล้ว และอนุมัติเติมเครดิต?`:'ปฏิเสธคำขอนี้?')) return;
+  try{ const el=$('#slip'+id); await rpc('admin_topup_decide',{p_id:id,p_ok:ok,p_slip:el&&el.value.trim()?el.value.trim():null}); msg(ok?'อนุมัติแล้ว':'ปฏิเสธแล้ว'); await load(); }
+  catch(e){ msg(/duplicate|unique/i.test(e.message)?'เลขอ้างอิงสลิปนี้เคยใช้แล้ว':errText(e)); }
+}
+async function toggleWallet(){
+  const on=(DATA.cfg||{}).wallet_on==='1';
+  if(!confirm(on?'ปิดระบบค่าบริการ? ร้านทุกร้านจะกลับมาใช้ฟรีและไม่ถูกหักเครดิต':'เปิดระบบค่าบริการ? ร้านที่ไม่มีเครดิตจะถูกซ่อนจากลูกค้าทันที')) return;
+  try{ await rpc('admin_set_cfg',{p_k:'wallet_on',p_v:on?'0':'1'}); msg('บันทึกแล้ว'); await load(); }catch(e){ msg(errText(e)); }
+}
+async function saveCfg(){
+  try{
+    for(const [k,id] of [['fee_pct','#fp'],['fee_min','#fm'],['platform_pp','#pp'],['platform_name','#pn'],['provider_name','#vn'],['provider_tax_id','#vt'],['provider_branch','#vb'],['provider_address','#va'],['vat_rate','#vr'],['vat_registered','#vg'],['slip_auto','#sa']]) await rpc('admin_set_cfg',{p_k:k,p_v:$(id).value.trim()});
+    msg('บันทึกการตั้งค่าแล้ว'); await load();
+  }catch(e){ msg(errText(e)); }
+}
+async function adjust(){
+  const who=$('#aw').value.trim(), amt=parseFloat($('#aa').value), note=$('#an').value.trim();
+  if(!who||!isFinite(amt)||!amt) return msg('กรอกอีเมล/uid และจำนวนเงิน');
+  if(!confirm(`ปรับเครดิต ${who} ${amt>0?'+':''}${amt} บาท?`)) return;
+  try{ const r=await rpc('admin_wallet_adjust',{p_who:who,p_amount:amt,p_note:note}); msg('ปรับแล้ว ยอดใหม่ '+baht(r.balance)); $('#aa').value=''; $('#an').value=''; await load(); }
+  catch(e){ msg(errText(e)); }
+}
+init();
+</script>
+</body>
+</html>
