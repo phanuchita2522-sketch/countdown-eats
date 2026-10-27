@@ -109,6 +109,7 @@ const ADMOB={
 };
 
 /* ---------- Translations: key:[th,en] ---------- */
+const WTERMS_TH="1. เครดิตระบบคือยอดเงินที่ร้านค้าเติมล่วงหน้าเพื่อชำระค่าบริการแพลตฟอร์ม ไม่ใช่เงินฝากหรือบัญชีเงินออม ไม่มีดอกเบี้ย\n2. ร้านค้าเติมเครดิตด้วยการโอนพร้อมเพย์ตามยอดที่แอประบุ (มีเศษสตางค์ไว้จับคู่รายการ เครดิตที่ได้นับเป็นจำนวนเต็มบาท) เครดิตเข้าหลังผู้ดูแลหรือระบบตรวจสอบยอดแล้ว\n3. เมื่อเปิดใช้ค่าบริการ ระบบหักค่าบริการตามอัตราที่แสดงในแอป (ปัจจุบัน {p}% ของยอดขายแต่ละออเดอร์ ยกเว้นตู้เย็นชุมชน) เมื่อร้านยืนยันรับของ ระบบกันวงเงินเครดิตไว้ตอนมีออเดอร์ หากเครดิตไม่พอ ร้านจะลงขายรายการใหม่หรือรับออเดอร์ใหม่ไม่ได้ จนกว่าจะเติมเพิ่ม\n4. ยอดขายที่ลูกค้าจ่ายให้ร้านโดยตรงเป็นของร้านค้า แพลตฟอร์มไม่ได้รับหรือถือเงินส่วนนั้น\n5. ค่าบริการอาจเปลี่ยนอัตราได้ โดยแจ้งในแอปล่วงหน้า ออเดอร์ที่สร้างแล้วใช้อัตราเดิม\n6. เครดิตที่เติมแล้วไม่สามารถถอนเป็นเงินสดและไม่โอนให้ผู้อื่น ยกเว้นกรณีปิดบริการหรือระบบหักผิดพลาด ซึ่งผู้ดูแลจะคืนหรือปรับยอดตามจริง\n7. ใบเสร็จออกให้ทุกครั้งที่เติมเครดิต แสดงยอดก่อนภาษี ภาษีมูลค่าเพิ่ม (ถ้าผู้ให้บริการจดทะเบียน) และยอดรวม ข้อมูลผู้ให้บริการเป็นไปตามที่ระบุในใบเสร็จ ณ วันที่ออก\n8. หากพบการโอนผิดยอดหรือผิดบัญชี ให้ติดต่อผู้ดูแลพร้อมสลิป ผู้ดูแลอาจระงับการใช้เครดิตระหว่างตรวจสอบ ข้อมูลสลิปใช้เพื่อตรวจสอบการชำระเงินเท่านั้น (ดูนโยบายความเป็นส่วนตัว)\n9. ผู้ดูแลระงับหรือปิดบัญชีร้านที่ฉ้อโกงหรือผิดข้อกำหนดได้ และอาจเปลี่ยนเงื่อนไขนี้โดยแจ้งในแอป การเติมเครดิตครั้งถัดไปถือว่ายอมรับเงื่อนไขฉบับใหม่", WTERMS_EN="Platform credit is prepaid money used to pay platform service fees. It is not a deposit and earns no interest.\nTop up by PromptPay transfer for the amount shown (extra satang only match your transfer; credit is whole baht). Credit is added once the transfer is verified.\nWhen fees are enabled, the platform deducts the fee shown in the app ({p}% of each order, community fridge excluded) when you confirm pickup. Credit is reserved for open orders. With insufficient credit you cannot list items or take new orders until you top up.\nSales paid by customers go directly to the shop; the platform does not hold that money.\nFee rates may change with notice in the app; existing orders keep their rate.\nCredit is non-refundable in cash and non-transferable, except if the service closes or a deduction error occurs, which the admin will correct.\nA receipt is issued per top-up showing amount before tax, VAT (if the provider is VAT-registered) and total, with provider details as of issue date.\nReport wrong amounts or accounts with your slip. Credit may be frozen during review. Slip data is used only to verify payment.\nThe admin may suspend fraudulent or non-compliant shops and update these terms with notice; topping up again means accepting the new version.";
 const T={
   tagline:['ทุกนาทีมีค่า ทุกกล่องกู้โลก','Every minute counts. Every box saves the planet.'],
   nightTitle:['ตลาดโต้รุ่งกู้โลก','Night Market Rescue'],
@@ -129,6 +130,8 @@ const T={
   tag_halal:['ฮาลาล','Halal'],
   tag_veg:['มังสวิรัติ','Vegetarian'],
   tag_set:['เมนูกับข้าว','Set meals'],
+  tag_sweet:['🍰 ขนมหวาน','🍰 Sweets'],
+  tag_drink:['🥤 เครื่องดื่ม','🥤 Drinks'],
   tag_dessert:['ขนมหวาน/กาแฟ','Desserts & coffee'],
   type_eatery:['ร้านอาหารตามสั่ง','Made-to-order eatery'],
   type_market:['ตลาดสด','Fresh market'],
@@ -372,6 +375,39 @@ const T={
   b3n:['มิตรแท้ชาวคอนโด','Condo Best Buddy'],
   b3d:['แบ่งปัน/รับของในตึกครบ 3 ครั้ง','Share or receive food in your building 3 times'],
   badgeToast:['ได้เหรียญ “{n}” +30 แต้ม','Badge unlocked: “{n}” +30 pts'],
+  radiusUpBtn:['ใช้ 100 แต้ม ขยายรัศมีเป็น {n} กม.','Spend 100 pts to extend radius to {n} km'],
+  radiusNoPts:['แต้มไม่พอ ต้องใช้ 100 แต้ม (ตอนนี้มี {n})','Not enough points: need 100 (you have {n})'],
+  radiusDone:['ขยายรัศมีค้นหาเป็น {n} กม. แล้ว','Search radius extended to {n} km'],
+  radiusMaxed:['ขยายรัศมีสูงสุดแล้ว 100 กม.','Radius is already at the 100 km maximum'],
+  radiusCardTitle:['ขยายรัศมีค้นหาร้าน','Extend shop search radius'],
+  radiusCardSub:['100 แต้ม = +1 กม. (เริ่มที่ 3 กม. สูงสุด 100 กม.) รัศมีตอนนี้ {n} กม.','100 pts = +1 km (starts at 3 km, max 100 km). Current radius: {n} km'],
+  shopNoCredit:['ร้านนี้งดรับจองชั่วคราว ลองร้านอื่นหรือกลับมาใหม่ภายหลัง','This shop is not taking reservations right now. Try another shop or come back later.'],
+  walletBtn:['เครดิตค่าบริการร้านค้า','Shop service credit'],
+  walletTitle:['เครดิตค่าบริการ','Service credit'],
+  walletOff:['ตอนนี้ยังไม่เก็บค่าบริการ ใช้งานฟรี ระบบเครดิตจะเปิดใช้เมื่อประกาศ','No service fee yet — free to use. Credit will apply once announced.'],
+  walletBal:['เครดิตคงเหลือ','Credit balance'],
+  walletFree:['ใช้รับออเดอร์ใหม่ได้','Available for new orders'],
+  walletTermsNeed:['กรุณายอมรับเงื่อนไขการเติมเงินก่อน','Please accept the top-up terms first'],
+  walletTermsTitle:['เงื่อนไขการเติมเงินและการใช้เครดิตระบบ','Top-up & Platform Credit Terms'],
+  walletTermsAcc:['ยอมรับเงื่อนไข','Accept'],
+  slipBtn:['📎 แนบสลิปให้ระบบตรวจ','📎 Attach slip for auto-check'],
+  slipOk:['เติมเครดิตแล้ว ✅','Credit added ✅'],
+  slipManual:['ส่งสลิปแล้ว ผู้ดูแลจะตรวจสอบให้ภายหลัง','Slip received; the admin will review it'],
+  slipDup:['สลิปนี้ถูกใช้แล้ว','This slip was already used'],
+  rcptPrint:['พิมพ์ / บันทึกเป็น PDF','Print / save as PDF'],
+  walletReceipts:['ใบเสร็จเติมเครดิต','Top-up receipts'],
+  walletTermsBody:[WTERMS_TH,WTERMS_EN],
+  walletRule:['ค่าบริการ {p}% ของยอดขายแต่ละออเดอร์ หักเมื่อร้านยืนยันรับของสำเร็จ ออเดอร์ที่ยกเลิกไม่เสียค่าบริการ ตู้เย็นชุมชนไม่เสียค่าบริการ เครดิตหมดแล้วร้านจะไม่ขึ้นให้ลูกค้าและรับจองไม่ได้จนกว่าจะเติมเครดิต','{p}% service fee per order, deducted when you confirm pickup. Cancelled orders cost nothing. Community fridge is free. With no credit left your shop is hidden and cannot take reservations until you top up.'],
+  walletTopTitle:['เติมเครดิต (โอนเข้าบัญชีของแอป)','Top up (transfer to the app’s account)'],
+  walletScan:['สแกนโอนยอดนี้เป๊ะ รวมเศษสตางค์ แล้วรอผู้ดูแลอนุมัติ (ปกติภายใน 1 วัน) เครดิตที่เติมแล้วไม่คืนเงิน','Transfer exactly this amount including the satang, then wait for approval (usually within a day). Credit is non-refundable.'],
+  walletPending:['รอตรวจสอบการโอน','Waiting for approval'],
+  walletHist:['ประวัติเครดิต','Credit history'],
+  walletNoPp:['ยังไม่ได้ตั้งบัญชีรับเติมเครดิต ติดต่อผู้ดูแล','Top-up account not set yet. Please contact the admin.'],
+  walletDone:['โอนแล้ว รอตรวจสอบ','I have transferred'],
+  walletK_topup:['เติมเครดิต','Top-up'],
+  walletK_fee:['ค่าบริการออเดอร์','Order fee'],
+  walletK_adjust:['ปรับยอดโดยผู้ดูแล','Admin adjustment'],
+  walletQr:['ดู QR','Show QR'],
   redeemTitle:['แลกแต้ม','Redeem points'],
   couponName:['ส่วนลด ฿10 ในออเดอร์ถัดไป','฿10 off your next order'],
   couponCost:['ใช้ 100 แต้ม · คูปองที่มี {n} ใบ','Costs 100 pts · You have {n}'],
@@ -1060,7 +1096,7 @@ function confirmDelete(){ sheet(`<div class="display text-xl mb-2">${t('deleteTi
    Every rule that matters (price, stock, who may confirm a payment, fraud limits, pickup code, privacy) is enforced by the server
    (cde-schema.sql). This layer only calls it, so editing the app's JavaScript cannot bypass anything. */
 const SRV_ERR={AUTH:'errAuth',LOGIN:'errLogin',BANNED:'errBanned',RATE:'errRate',BAD_INPUT:'errBadInput',SELF:'ownShop',CLOSED:'closedToast',SUSPENDED:'shopSuspended',NO_PAY:'payNotSet',ENDED:'listingEnded',SOLD_OUT:'soldOutToast',
-  STOCK_LEFT:'stockLeft',ACCT_LIMITED:'acctLimited',TOO_MANY_OPEN:'tooManyOpen',UNPAID_LOCK:'unpaidLock',NEW_SHOP_CAP:'newShopCap',NEW_SHOP_BUSY:'newShopBusy',SHOP_BUSY:'newShopBusy',NOT_FOUND:'errNotFound',STATE:'errState',
+  STOCK_LEFT:'stockLeft',ACCT_LIMITED:'acctLimited',TOO_MANY_OPEN:'tooManyOpen',UNPAID_LOCK:'unpaidLock',NEW_SHOP_CAP:'newShopCap',NEW_SHOP_BUSY:'newShopBusy',SHOP_NO_CREDIT:'shopNoCredit',WALLET_TERMS:'walletTermsNeed',SHOP_BUSY:'newShopBusy',NOT_FOUND:'errNotFound',STATE:'errState',
   EXPIRED_ORDER:'orderExpired',BAD_CODE:'scanBadCode',NOT_PAID:'notPaidYet',USED:'scanUsed',TOO_MANY_SHOPS:'maxShops',TOO_MANY_ITEMS:'maxItemsToast',BAD_ITEM:'errBadItem',BAD_FDA:'errBadItem',BAD_TEXT:'noContactInName',BAD_PAY:'payNeed'};
 const Srv={
   on:false,since:null,sold:{},hash:{},others:new Map(),mineList:[],known:new Map(),stats:null,dirty:false,pushing:false,again:false,pushT:0,pollT:0,lastFull:0,creating:false,idsSig:'',ordSig:'',
@@ -1125,7 +1161,7 @@ const Srv={
     if(!this.on) return;
     try{
       const L=S.myLoc, r2=v=>Math.round(v*100)/100;                                    // coordinates are rounded to ~1 km before leaving the device
-      const a=await this.rpc('list_shops',{p_lat:L?r2(L.lat):null,p_lng:L?r2(L.lng):null,p_km:8,p_since:full?null:this.since});
+      const a=await this.rpc('list_shops',{p_lat:L?r2(L.lat):null,p_lng:L?r2(L.lng):null,p_km:Math.max(8,S.radius),p_since:full?null:this.since});
       if(full) this.others.clear();
       (a.shops||[]).forEach(j=>{ const sh=this.conv(j,false); if(sh) this.others.set(sh.id,sh); });
       const ids=new Set(a.ids||[]); [...this.others.keys()].forEach(id=>{ if(!ids.has(id)) this.others.delete(id); });
@@ -1164,7 +1200,7 @@ const Srv={
       });
       const sg=list.map(n=>n.id+n.status+(n.rated?1:0)+(n.rp||'')).join('|'); const ch=sg!==this.ordSig; this.ordSig=sg;
       S.orders=list;
-      if(o.stats){ S.kg=+o.stats.kg||0; S.itemsSaved=+o.stats.items||0; S.baht=+o.stats.baht||0; S.boxes=+o.stats.boxes||0; const pts=+o.stats.points||0; checkBadges(); S.points=pts; }
+      if(o.stats){ S.kg=+o.stats.kg||0; S.itemsSaved=+o.stats.items||0; S.baht=+o.stats.baht||0; S.boxes=+o.stats.boxes||0; const pts=+o.stats.points||0; checkBadges(); S.points=pts; S.radiusMax=Math.min(100,Math.max(3,+o.stats.radius||3)); S.radius=Math.min(S.radius,S.radiusMax); }
       if(ch||msgs.length){ save(); queueRender(); if(msgs.length) toast(msgs[0]); }
     }catch(e){}
   },
@@ -1174,7 +1210,7 @@ const Srv={
       const r=await this.rpc('place_order',{p_shop:sid,p_lk:kind,p_lid:id,p_qty:qty});
       const ord=this.merge(r); BUY.qty=1; BUY.key=''; closeSheet(); S.tab='orders'; save(); render(); this.pullShops(false);
       if(ord&&ord.status==='pending'){ toast(t('payReserved',{m:15})); openPay(ord.id); } else { toast(t('reservedToast')); await Ads.interstitial(); }
-    }catch(e){ this.err(e); if(['SOLD_OUT','ENDED','STOCK_LEFT','CLOSED','SUSPENDED'].includes(e.code)){ closeSheet(); this.pullShops(false); } }
+    }catch(e){ this.err(e); if(['SOLD_OUT','ENDED','STOCK_LEFT','CLOSED','SUSPENDED','SHOP_NO_CREDIT'].includes(e.code)){ closeSheet(); this.pullShops(false); } }
     finally{ this.busy=false; const b=document.querySelector('#layer .btn'); if(b){ b.disabled=false; b.style.opacity=''; } }
   },
   async markPaid(oid){
@@ -1333,7 +1369,7 @@ const DROPS=['lobby','mailbox','office'];
 const FRESH=['fresh','dry','sauce'];
 function detectLang(){ const n=(navigator.language||'').toLowerCase(); return n.startsWith('th')?'th':n.startsWith('en')?'en':'th'; }
 const defaults={
-  lang:'', tab:'home', demo:false, radius:3, dietary:[], category:[],
+  lang:'', tab:'home', demo:false, radius:3, radiusMax:3, itemCat:[], dietary:[], category:[],
   user:{verified:false,phone:'',name:''}, building:'', buildingOK:false,
   points:0, kg:0, baht:0, boxes:0, fridgeActs:0, trust:4.8,
   orders:[], posts:null, shops:null, claimed:[], badges:{}, coupons:0, adDay:{d:'',n:0}, seedDay:'', menuAdds:{}, riderEarn:0, group:'', itemsSaved:0, schema:0, notices:[], noticeSeen:0, myLoc:null
@@ -2245,7 +2281,7 @@ function viewRetail(){
   <div class="card p-4 mt-3">
     ${gpsBar()}<div class="text-xs muted mb-3">${t(PROD?'gpsPrivacyProd':'gpsPrivacy')}</div>
     <div class="flex items-center justify-between text-sm font-semibold"><label for="rad">${t('radiusLabel')}</label><span class="display" id="radv">${S.radius} ${t('km')}</span></div>
-    <input id="rad" type="range" min="1" max="3" step="1" value="${S.radius}" style="padding:0;border:0" oninput="setRadius(+this.value)">
+    <input id="rad" type="range" min="1" max="${S.radiusMax||3}" step="1" value="${S.radius}" style="padding:0;border:0" oninput="setRadius(+this.value)">${radiusUp()}
     <div class="flex flex-wrap gap-2 mt-3">${CHAINS.map(cc).join('')}</div>
   </div>
   <div class="display text-lg mt-4 mb-2">${t('anytimeTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
@@ -2253,19 +2289,113 @@ function viewRetail(){
   <div class="card p-3 mt-3 text-xs muted">${t('chainNote')}</div>
   ${partnerCard()}`;
 }
+const offerCats=o=>{ const c=new Set(); if(o.kind==='item'&&o.item) c.add(o.item.cat); else if(o.kind==='bundle') (o.items||[]).forEach(x=>c.add(x.cat)); else if(o.kind==='box'&&o.box&&o.box.mix) Object.keys(o.box.mix).forEach(k=>{ if((+o.box.mix[k]||0)>0) c.add(k); }); return c; };
+const shopHasCat=sh=>liveOffers(sh).some(o=>o.left>0&&S.itemCat.some(k=>offerCats(o).has(k)));       // 'sweet' / 'drink' filter looks at what is really on the shelf
 function filteredShops0(){
   if(normQ(SQ)) return S.shops.filter(s=>liveOffers(s).length>0&&matchQ(s));        // searching: any shop, any distance, any time of day
-  const fl=flashOn(), useFood=!S.group||S.group==='food', foodFilter=useFood&&(S.dietary.length||S.category.length);
+  const fl=flashOn(), useFood=!S.group||S.group==='food', tagFilter=useFood&&(S.dietary.length||S.category.length);
   return S.shops.filter(s=>withinRadius(s)
     && liveOffers(s).length>0                                        // nothing left on the shelf -> the shop is cleared from the list
     && (fl||!isTimed(s))
     && (!S.group||shopGroups(s).has(S.group))
+    && (!useFood||!S.itemCat.length||shopHasCat(s))
     && (isTimed(s)
         ? (!useFood||(S.dietary.every(x=>s.tags.includes(x))&&(S.category.length===0||S.category.some(x=>s.tags.includes(x)))))
-        : !foodFilter));
+        : !tagFilter));
 }
 function shopListHtml(list){ return list.length?list.map(shopCard).join(''):`<div class="card p-6 text-center muted">${normQ(SQ)?t('noResults'):(S.tab==='retail'?t('retailEmpty'):t('noBoxes'))}</div>`; }
-function setRadius(v){ S.radius=v; save(); const r=$('#radv'); if(r) r.textContent=`${v} ${t('km')}`; const l=filteredShops(); const b=$('#shoplist'); if(b) b.innerHTML=shopListHtml(l); const c=$('#shopcnt'); if(c) c.textContent=`(${l.length})`; }
+async function openWallet(){
+  if(!PROD||!Srv.on) return;
+  if(!S.user.verified) return needVerify(()=>openWallet());
+  let w; try{ w=await Srv.rpc('wallet_info'); }catch(e){ return Srv.err(e); }
+  if(!w.on){ sheet(`<div class="display text-xl mb-2">💰 ${t('walletTitle')}</div><div class="card p-4 text-sm">${t('walletOff')}</div><button class="btn alt w-full mt-3" onclick="closeSheet()">${t('close')}</button>`); return; }
+  if(!w.terms_ok) return walletTerms(w);
+  const sm=n=>'฿'+(+n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+  const pend=(w.pending||[]).map(x=>`<div class="flex items-center justify-between gap-2 text-sm py-1"><span class="digits">฿${(+x.amount).toFixed(2)}</span><button class="chip" onclick="window._wid=${+x.id};walletQr(${(+x.amount).toFixed(2)})">${t('walletQr')}</button></div>`).join('');
+  const hist=(w.tx||[]).map(x=>`<div class="flex items-center justify-between text-sm py-1"><span>${t('walletK_'+x.kind)} <span class="muted text-xs">${esc(dateStr(new Date(+x.ts).toISOString().slice(0,10)))}</span></span><b style="color:${x.amount<0?'var(--chili)':'var(--jade)'}">${x.amount<0?'−':'+'}${sm(Math.abs(x.amount))}</b></div>`).join('');
+  const rc=(w.receipts||[]).map(x=>`<div class="flex items-center justify-between gap-2 text-sm py-1"><span><span class="digits">${esc(x.no)}</span> <span class="muted text-xs">฿${(+x.paid).toLocaleString('en-US')}</span></span><button class="chip" onclick="walletReceipt(${+x.id})">🧾</button></div>`).join('');
+  try{ window._slipOn=!!(await Srv.rpc('slip_auto_on')); }catch(_){ window._slipOn=false; }
+  window._wpp={pp:String(w.pp||''),name:String(w.ppname||'')};
+  sheet(`<div class="display text-xl mb-2">💰 ${t('walletTitle')}</div>
+    <div class="card p-4 text-center"><div class="text-xs muted">${t('walletBal')}</div><div class="display text-3xl">${sm(w.balance)}</div><div class="text-xs muted mt-1">${t('walletFree')}: ${sm(w.free)}</div></div>
+    <div class="text-xs muted mt-2">${t('walletRule',{p:+w.pct})}</div>
+    <div class="display text-lg mt-4 mb-2">${t('walletTopTitle')}</div>
+    <div class="flex flex-wrap gap-2">${[100,200,500,1000].map(a=>`<button class="chip" onclick="walletTop(${a})">฿${a}</button>`).join('')}</div>
+    ${pend?`<div class="display text-lg mt-4 mb-1">${t('walletPending')}</div><div class="card p-3">${pend}</div>`:''}
+    ${hist?`<div class="display text-lg mt-4 mb-1">${t('walletHist')}</div><div class="card p-3">${hist}</div>`:''}
+    ${rc?`<div class="display text-lg mt-4 mb-1">${t('walletReceipts')}</div><div class="card p-3">${rc}</div>`:''}
+    <button class="btn alt w-full mt-4" onclick="closeSheet()">${t('close')}</button>`);
+}
+
+function walletTerms(w){
+  const body=String(t('walletTermsBody')).replace('{p}',+w.pct||10).split('\n').map(x=>`<p class="text-sm mb-2">${esc(x)}</p>`).join('');
+  sheet(`<div class="display text-xl mb-2">📜 ${t('walletTermsTitle')}</div><div class="card p-3" style="max-height:55vh;overflow:auto">${body}</div>
+    <button class="btn w-full mt-3" onclick="walletAccept()">✅ ${t('walletTermsAcc')}</button><button class="btn alt w-full mt-2" onclick="closeSheet()">${t('close')}</button>`);
+}
+async function walletAccept(){ try{ await Srv.rpc('accept_wallet_terms'); openWallet(); }catch(e){ Srv.err(e); } }
+async function walletReceipt(id){
+  let r; try{ r=await Srv.rpc('wallet_receipt',{p_id:id}); }catch(e){ return Srv.err(e); }
+  const m=n=>(+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}), P=r.provider||{};
+  const html=receiptHtml(r,m,P);
+  window._rcpt=html;
+  sheet(`<div class="display text-xl mb-2">🧾 ${esc(r.no)}</div><div class="card p-3" style="overflow:auto">${html}</div>
+    <button class="btn w-full mt-3" onclick="receiptPrint()">🖨️ ${t('rcptPrint')}</button><button class="btn alt w-full mt-2" onclick="openWallet()">${t('close')}</button>`);
+}
+// Receipt template — placeholders [PROVIDER_NAME] / [TAX_ID] are filled from back-office settings stored on each receipt
+function receiptHtml(r,m,P){
+  const tpl=`<div style="font-family:sans-serif;font-size:13px;line-height:1.5"><div style="text-align:center"><b>[TITLE]</b></div>
+<div><b>[PROVIDER_NAME]</b> (สาขา [BRANCH])<br>[ADDRESS]<br>เลขประจำตัวผู้เสียภาษี: [TAX_ID]</div><hr>
+<div>เลขที่: [NO] · วันที่: [DATE]<br>ลูกค้า (ร้านค้า): [BUYER]</div>
+<table style="width:100%;border-collapse:collapse;margin-top:8px"><tr><td>ค่าบริการเครดิตระบบ (ก่อน VAT)</td><td style="text-align:right">[NET]</td></tr>
+<tr><td>ภาษีมูลค่าเพิ่ม [VATPCT]%</td><td style="text-align:right">[VAT]</td></tr>
+<tr style="border-top:1px solid #000"><td><b>รวมทั้งสิ้น</b></td><td style="text-align:right"><b>[TOTAL]</b></td></tr></table>
+<div style="margin-top:8px;font-size:11px">[NOTE]</div></div>`;
+  const dt=new Date(+r.ts).toLocaleString('th-TH',{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'});
+  const vals={TITLE:r.vat_reg?'ใบเสร็จรับเงิน / ใบกำกับภาษี':'ใบเสร็จรับเงิน',PROVIDER_NAME:esc(P.name||'—'),BRANCH:esc(P.branch||'00000'),ADDRESS:esc(P.address||''),TAX_ID:esc(P.tax_id||'—'),NO:esc(r.no),DATE:esc(dt),BUYER:esc(r.buyer||''),NET:'฿'+m(r.net),VATPCT:r.vat_reg?(+r.vat_pct):0,VAT:'฿'+m(r.vat),TOTAL:'฿'+m(r.paid),NOTE:r.vat_reg?'ราคารวมภาษีมูลค่าเพิ่มแล้ว':'ผู้ให้บริการยังไม่ได้จดทะเบียนภาษีมูลค่าเพิ่ม'};
+  return tpl.replace(/\[([A-Z_]+)\]/g,(a,k)=>k in vals?vals[k]:a);
+}
+function receiptPrint(){ const w=window.open('','_blank'); if(!w) return toast(t('popupBlocked')||'popup blocked'); w.document.write('<!doctype html><meta charset="utf-8"><title>Receipt</title><body style="max-width:480px;margin:20px auto">'+window._rcpt+'</body>'); w.document.close(); w.focus(); setTimeout(()=>w.print(),300); }
+async function slipSend(f,id){
+  if(!f||!id) return; if(f.size>3e6) return toast('ไฟล์ใหญ่เกิน 3MB / file too large');
+  const b64=await new Promise((ok,no)=>{const r=new FileReader(); r.onload=()=>ok(r.result); r.onerror=no; r.readAsDataURL(f);});
+  toast('…');
+  try{
+    const ses=(await Cloud.sb.auth.getSession()).data.session; if(!ses) return;
+    const r=await fetch(CDE_SUPABASE.url+'/functions/v1/verify-slip',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+ses.access_token,apikey:CDE_SUPABASE.key},body:JSON.stringify({id,image:b64})});
+    const j=await r.json().catch(()=>({}));
+    if(j.ok){ toast(t('slipOk')); return openWallet(); }
+    toast(t(j.code==='DUPLICATE'?'slipDup':'slipManual'));
+  }catch(e){ toast(t('slipManual')); }
+}
+async function walletTop(a){
+  if(walletTop.busy) return; walletTop.busy=true;
+  try{ const r=await Srv.rpc('wallet_topup_request',{p_amount:a}); window._wid=+r.id; try{ window._slipOn=!!(await Srv.rpc('slip_auto_on')); }catch(_){ window._slipOn=false; } walletQr(+r.amount); }
+  catch(e){ Srv.err(e); } finally{ walletTop.busy=false; }
+}
+function walletQr(amount){
+  const p=window._wpp||{}; if(!ppValid(p.pp)){ sheet(`<div class="card p-4 text-sm">${t('walletNoPp')}</div><button class="btn alt w-full mt-3" onclick="openWallet()">${t('close')}</button>`); return; }
+  const qr=qrSvgReal(ppPayload(p.pp,amount),'PromptPay QR');
+  sheet(`<div class="display text-xl mb-1">${t('walletTopTitle')}</div>
+    <div class="card p-3 mt-2 text-center"><div class="text-xs muted">${t('payAmount')}</div><div class="display text-3xl">฿${(+amount).toFixed(2)}</div></div>
+    ${qr?`<div class="flex justify-center my-3">${qr}</div>`:`<div class="text-xs my-2" style="color:var(--chili)">${t('payQrFail')}</div>`}
+    <div class="text-sm font-semibold break-words text-center">${esc(p.name)}</div>
+    <div class="digits text-center text-sm">${esc(p.pp)}</div>
+    <div class="text-xs mt-2" style="color:var(--chili)">${t('walletScan')}</div>
+    ${window._slipOn?`<label class="btn alt w-full mt-3 text-center" style="display:block;cursor:pointer">${t('slipBtn')}<input type="file" accept="image/*" hidden onchange="slipSend(this.files[0],${+window._wid||0})"></label>`:''}
+    <button class="btn w-full mt-4" onclick="openWallet()">✅ ${t('walletDone')}</button>`);
+}
+const radiusUp=()=>PROD&&S.user.verified&&(S.radiusMax||3)<100?`<button class="chip mt-2" onclick="radiusRedeem()">🔓 ${t('radiusUpBtn',{n:(S.radiusMax||3)+1})}</button>`:'';
+async function radiusRedeem(){
+  if(!PROD||!Srv.on) return;
+  if(!S.user.verified) return needVerify(()=>render());
+  if((S.points||0)<100) return toast(t('radiusNoPts',{n:S.points||0}));
+  try{
+    const r=await Srv.rpc('redeem_radius');
+    S.points=+r.points||0; S.radiusMax=Math.min(100,Math.max(3,+r.radius||3)); S.radius=S.radiusMax; save(); render(); toast(t('radiusDone',{n:S.radiusMax}));
+    Srv.pullShops(true);
+  }catch(e){ if(e&&e.code==='NO_POINTS') toast(t('radiusNoPts',{n:e.n})); else if(e&&e.code==='MAX_RADIUS') toast(t('radiusMaxed')); else Srv.err(e); }
+}
+function setRadius(v){ S.radius=v; save(); if(PROD&&Srv.on){ clearTimeout(setRadius.t); setRadius.t=setTimeout(()=>Srv.pullShops(true),500); } const r=$('#radv'); if(r) r.textContent=`${v} ${t('km')}`; const l=filteredShops(); const b=$('#shoplist'); if(b) b.innerHTML=shopListHtml(l); const c=$('#shopcnt'); if(c) c.textContent=`(${l.length})`; }
 function tog(k,v){ const a=S[k],i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v); save(); render(); }
 function setGroup(g){ S.group=GROUPS.includes(g)?g:'food'; save(); render(); }
 function viewHome(){
@@ -2284,9 +2414,9 @@ function viewHome(){
   <div class="card p-4 mt-3">
     ${gpsBar()}<div class="text-xs muted mb-3">${t(PROD?'gpsPrivacyProd':'gpsPrivacy')}</div>
     <div class="flex items-center justify-between text-sm font-semibold"><label for="rad">${t('radiusLabel')}</label><span class="display" id="radv">${S.radius} ${t('km')}</span></div>
-    <input id="rad" type="range" min="1" max="3" step="1" value="${S.radius}" style="padding:0;border:0" oninput="setRadius(+this.value)">
+    <input id="rad" type="range" min="1" max="${S.radiusMax||3}" step="1" value="${S.radius}" style="padding:0;border:0" oninput="setRadius(+this.value)">${radiusUp()}
     <div class="flex flex-wrap gap-2 mt-3">${GROUPS.map(gchip).join('')}</div>
-    ${fl&&useFood?`<div class="flex flex-wrap gap-2 mt-2">${['halal','veg'].map(x=>chip('dietary',x)).join('')}${['set','dessert'].map(x=>chip('category',x)).join('')}</div>`:''}
+    ${useFood?`<div class="flex flex-wrap gap-2 mt-2">${['sweet','drink'].map(x=>chip('itemCat',x)).join('')}${fl?['halal','veg'].map(x=>chip('dietary',x)).join('')+['set'].map(x=>chip('category',x)).join(''):''}</div>`:''}
   </div>
   <div class="flex items-center justify-between gap-2 mt-4 mb-2"><div class="display text-lg">${fl?t('boxesNear'):t('anytimeTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
     ${fl?`<button class="text-sm font-semibold underline text-right" style="color:var(--chili)" onclick="rewardPoints()">${t('watchAd')}</button>`:''}</div>
@@ -2991,13 +3121,16 @@ function viewMe(){
   ${PROD?'':`<button class="btn w-full mt-3" onclick="rewardPoints()">${t('watchAdBtn')}</button>`}
   <div class="display text-lg mt-5 mb-2">${t('badgesTitle')}</div>
   <div class="space-y-2">${BADGES.map(b=>{const on=S.badges[b.k];return `<div class="card p-3 flex items-center gap-3" style="opacity:${on?1:.55}"><div class="text-3xl">${on?b.e:'🔒'}</div><div><div class="font-bold">${t(b.n)}</div><div class="text-sm muted">${t(b.d)}</div></div></div>`}).join('')}</div>
-  ${PROD?'':`  <div class="display text-lg mt-5 mb-2">${t('redeemTitle')}</div>
+  ${PROD?`<div class="display text-lg mt-5 mb-2">${t('redeemTitle')}</div>
+  <div class="card p-4 flex items-center justify-between gap-2"><div><div class="font-bold">${t('radiusCardTitle')}</div><div class="text-sm muted">${t('radiusCardSub',{n:S.radiusMax||3})}</div></div>
+    <button class="btn py-2 shrink-0" ${(S.radiusMax||3)>=100?'disabled':''} onclick="radiusRedeem()">${t('redeemBtn')}</button></div>`:`  <div class="display text-lg mt-5 mb-2">${t('redeemTitle')}</div>
   <div class="card p-4 flex items-center justify-between gap-2"><div><div class="font-bold">${t('couponName')}</div><div class="text-sm muted">${t('couponCost',{n:S.coupons})}</div></div>
     <button class="btn py-2 shrink-0" ${S.points<100?'disabled':''} onclick="redeem()">${t('redeemBtn')}</button></div>`}
   <div class="card p-3 mt-5 text-xs" style="color:${(Cloud.on||Srv.on)&&!Cloud.ro?'var(--jade)':'var(--muted)'}">${(Cloud.on||Srv.on)?(Cloud.ro?t('cloudRO'):t('cloudOn')):t('cloudOff')}</div>
   <div class="display text-lg mt-5 mb-2">${t('shopMode')}</div>
   <div class="space-y-2"><button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openRegister()"><span class="font-bold">🏪 ${t('regOpen')}</span><span class="muted text-sm">1–3</span></button>
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="${mgrShops().length?`openMenuMgr(${mgrShops()[0].id})`:(PROD&&!S.user.verified?"openMenuMgr(0)":"toast(t('notEditable'))")}"><span class="font-bold">🍽️ ${t('regManage')}</span><span class="muted text-sm">📷 ฿</span></button>
+  ${PROD&&S.user.verified?`<button class="card p-4 w-full text-left font-bold mt-3" onclick="openWallet()">💰 ${t('walletBtn')}</button>`:''}
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openDesk()"><span class="font-bold">📦 ${t('deskTitle')}</span>${unreadAlerts()>0?`<span class="px-2 rounded-full text-white text-xs" style="background:var(--chili)">🔔 ${unreadAlerts()}</span>`:'<span class="muted text-sm">QR</span>'}</button>
   </div>
   ${PROD&&S.user.verified?`<button class="card p-4 w-full text-left font-bold mt-3" onclick="openNameEdit()">${t('nameBtn')}${S.user.name&&!S.user.name.includes('@')?` <span class="muted font-normal">· ${esc(S.user.name)}</span>`:''}</button>`:''}
@@ -3064,9 +3197,10 @@ function sanitizeState(){
   const nm=v=>typeof v==='string'?v.slice(0,60):(v&&typeof v==='object'?Object.fromEntries(LANGS.filter(l=>typeof v[l]==='string').map(l=>[l,v[l].slice(0,60)])):'');
   if(!['home','retail','fridge','orders','me'].includes(S.tab)) S.tab='home';
   if(!CHAINS.includes(S.chain)) S.chain=CHAINS[0];
-  S.radius=[1,2,3].includes(+S.radius)?+S.radius:3;
+  S.radiusMax=Math.min(100,Math.max(3,Math.round(+S.radiusMax)||3)); if(!PROD) S.radiusMax=3;
+  S.radius=Math.min(S.radiusMax,Math.max(1,Math.round(+S.radius)||3));
   S.myLoc=(S.myLoc&&validLL(+S.myLoc.lat,+S.myLoc.lng))?{lat:Math.round(+S.myLoc.lat*1e5)/1e5,lng:Math.round(+S.myLoc.lng*1e5)/1e5,ts:num(S.myLoc.ts,0)}:null;
-  S.dietary=arr(S.dietary).filter(x=>['halal','veg'].includes(x)); S.category=arr(S.category).filter(x=>['set','dessert'].includes(x));
+  S.dietary=arr(S.dietary).filter(x=>['halal','veg'].includes(x)); S.category=arr(S.category).filter(x=>['set'].includes(x)); S.itemCat=arr(S.itemCat).filter(x=>['sweet','drink'].includes(x));
   if(!GROUPS.includes(S.group)) S.group='food';
   if(!S.user||typeof S.user!=='object') S.user={verified:false,phone:'',name:''};
   S.user={verified:S.user.verified===true,phone:String(S.user.phone||'').replace(/\D/g,'').slice(0,12),name:String(S.user.name||'').slice(0,60)};
