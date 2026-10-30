@@ -2633,9 +2633,11 @@ async function googleLogin(){
     if(r&&r.error) toast(t('loginFail'));
   }catch(e){ toast(t('loginFail')); }
 }
-async function logout(){
-  try{ if(Cloud.sb) await Cloud.sb.auth.signOut(); }catch(e){}
-  try{ localStorage.removeItem(KEY); }catch(e){}
+async function logout(){                                                  // never depends on the network: revoke if it answers within 2.5 s, then wipe the local session regardless
+  const btn=document.activeElement; try{ if(btn&&btn.tagName==='BUTTON') btn.disabled=true; }catch(e){}
+  try{ if(Cloud.sb) await Promise.race([Cloud.sb.auth.signOut(),new Promise(r=>setTimeout(r,2500))]); }catch(e){}
+  try{ localStorage.removeItem(KEY); Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  try{ sessionStorage.removeItem('cde-relogin'); }catch(e){}
   location.reload();
 }
 function needVerify(then){
