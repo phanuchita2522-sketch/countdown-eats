@@ -188,6 +188,8 @@ const T={
   tipS5:['ห้ามแอบอ้างเป็นสาขาของแบรนด์ และห้ามใส่บัญชีรับเงินของคนอื่น','Never impersonate a brand branch, and never enter someone else’s payment account.'],
   payBtn:['จำลองชำระ ฿{n} (เดโม)','Simulate paying ฿{n} (demo)'],
   tabPay:['รับเงิน','Payment'],
+  tabWallet:['เครดิต','Credit'],
+  walletLoading:['กำลังโหลด…','Loading…'],
   payTitle:['บัญชีรับเงินของร้าน','Shop payment account'],
   ppLabel:['PromptPay (เบอร์มือถือ 10 หลัก / รหัส e-Wallet 15 หลัก / เลขนิติบุคคล 13 หลัก)','PromptPay ID (10-digit mobile / 15-digit e-Wallet / 13-digit tax ID)'],
   payNameLbl:['ชื่อบัญชี (ตรงกับที่แสดงในแอปธนาคาร)','Account name (as shown in the bank app)'],
@@ -552,6 +554,8 @@ const T={
   regS3:['เซ็ต & ยืนยัน','Sets & confirm'],
   regS4:['ยืนยัน','Confirm'],
   regName:['ชื่อร้าน','Shop name'],
+  regNameChain:['ชื่อห้าง/ร้าน และสาขา','Store name and branch'],
+  regNameChainPh:['เช่น มินิมาร์ท สาขาลาดกระบัง','e.g. Mini-mart, Ladkrabang branch'],
   regNamePh:['เช่น ข้าวแกงป้าแดง','e.g. Auntie Daeng Curry Rice'],
   regType:['ประเภทร้าน','Shop type'],
   regIcon:['ไอคอนร้าน','Shop icon'],
@@ -623,7 +627,7 @@ const T={
   chainNote:['แอปนี้ไม่ได้เป็นพันธมิตรหรือได้รับการรับรองจากแบรนด์ที่แสดงชื่อ รายการมาจากสาขา/ผู้ลงทะเบียนเอง ตรวจสอบราคาและวันหมดอายุที่หน้าร้านก่อนจ่ายเสมอ','This app is not affiliated with or endorsed by the brands named. Listings come from the branches/people who registered them. Always check price and expiry date in store before paying.'],
   retailEmpty:['ยังไม่มีสาขาในรัศมีนี้ ลองขยายรัศมี หรือลงทะเบียนสาขาของคุณ','No branches in this radius yet. Try a wider radius or register your branch.'],
   regChain:['แบรนด์/สาขา','Brand'],
-  chainRegWarn:['สำหรับพนักงานหรือผู้ได้รับอนุญาตของสาขาเท่านั้น ห้ามแอบอ้างแบรนด์ ใส่ชื่อสาขา (เช่น “รัชดา”) ลูกค้าจองในแอปแล้วจ่ายที่เคาน์เตอร์สาขา แอปไม่รับเงิน','For staff or authorised people of that branch only. Never impersonate a brand. Enter the branch name (e.g. “Ratchada”). Customers reserve in the app and pay at your counter; the app never takes money.'],
+  chainRegWarn:['สำหรับพนักงานหรือผู้ได้รับอนุญาตของสาขาเท่านั้น ห้ามแอบอ้างแบรนด์ พิมพ์ชื่อห้าง/ร้านและสาขาของคุณในช่องชื่อด้านบน ลูกค้าค้นหาชื่อนี้ได้ จองในแอปแล้วจ่ายที่เคาน์เตอร์สาขา แอปไม่รับเงิน','For staff or authorised people of that branch only. Never impersonate a brand. Type the store name and branch in the name field above; customers can find it by searching. Customers reserve in the app and pay at your counter; the app never takes money.'],
   chainPayNote:['จองไว้แล้วไปจ่ายและรับของที่สาขา (จ่ายที่เคาน์เตอร์) แอปไม่รับเงินและไม่โอนเงินให้ใคร ตรวจราคาและวันหมดอายุที่หน้าร้านก่อนจ่าย','Reserve now, then pay and collect at the branch counter. The app takes no money and never transfers payments. Check price and expiry in store before paying.'],
   reserveBtn:['จองสินค้า (จ่ายที่สาขา ฿{n})','Reserve (pay ฿{n} at branch)'],
   boxN:['กล่องสุ่ม {n} ชิ้น','Mystery box · {n} items'],
@@ -1805,9 +1809,9 @@ function relistables(sh){
 function openMenuMgr(sid,tab){
   if(PROD&&!S.user.verified) return needVerify(()=>openMenuMgr(sid,tab));            // not signed in: ask to log in instead of a dead end
   const L=mgrShops(); if(!L.length) return toast(t('notEditable'));
-  const sh=L.find(x=>x.id===sid)||L[0]; MG={sid:sh.id,tab:['items','sets','boxes','daily','pay'].includes(tab)?tab:'items'}; window._pending=null; MGON=true;
+  const sh=L.find(x=>x.id===sid)||L[0]; MG={sid:sh.id,tab:['items','sets','boxes','daily','pay','wallet'].includes(tab)?tab:'items'}; window._pending=null; MGON=true;
   WT=sh.type; WI=sh.items;
-  const tabBtn=(k,l)=>`<button class="chip flex-1 ${MG.tab===k?'on':''}" aria-pressed="${MG.tab===k}" onclick="openMenuMgr(${sh.id},'${k}')">${t(l)}</button>`;
+  const tabBtn=(k,l)=>`<button class="chip ${MG.tab===k?'on':''}" style="flex:1 1 30%" aria-pressed="${MG.tab===k}" onclick="openMenuMgr(${sh.id},'${k}')">${t(l)}</button>`;
   const rel=relistables(sh).length;
   let body='';
   if(MG.tab==='items'){
@@ -1828,6 +1832,8 @@ function openMenuMgr(sid,tab){
     body=dailyTabHtml(sh);
   } else if(MG.tab==='pay'){
     body=sh.type==='chain'?`<div class="card p-4 text-sm">${t('payChainNone')}</div>`:`${payFormHtml(sh.pay)}<div class="flex gap-2 mt-3"><button class="btn alt flex-1" onclick="savePay(${sh.id})">${t('confirm')}</button><button class="chip" onclick="previewPayQr(${sh.id})">${t('payPreview')}</button></div>`;
+  } else if(MG.tab==='wallet'){
+    body=`<div id="wbody" class="card p-4 text-sm muted">${t('walletLoading')}</div>`;
   } else {
     WS=JSON.parse(JSON.stringify(sh.sets||[]));
     body=`<div class="text-xs muted mb-2">${t('todayBoxesSub')}</div><div id="sets">${setsEditorHtml()}</div><button class="btn w-full mt-3" onclick="saveSets(${sh.id})">${t('saveBoxes')}</button>`;
@@ -1837,7 +1843,8 @@ function openMenuMgr(sid,tab){
     <select id="msh" class="mb-3" onchange="openMenuMgr(+this.value)">${L.map(x=>`<option value="${x.id}" ${x.id===sh.id?'selected':''}>${esc(loc(x.name))}</option>`).join('')}</select>
     <div class="flex gap-2 mb-3"><button class="chip flex-1" onclick="closeSheet();openRegister()">➕ ${t('addShopBtn')}</button><button class="chip flex-1" style="color:var(--chili)" onclick="askDelShop(${sh.id})">🗑️ ${t('delShopBtn')}</button></div>
     ${rel?`<button class="btn jade w-full mb-3" onclick="relistToday(${sh.id})">${t('relistToday',{n:rel})}</button>`:''}
-    <div class="flex gap-1 mb-4">${tabBtn('items','tabItems')}${tabBtn('sets','tabSets')}${tabBtn('boxes','tabBoxes')}${tabBtn('daily','tabDaily')}${tabBtn('pay','tabPay')}</div>${body}`);
+    <div class="flex flex-wrap gap-1 mb-4">${tabBtn('items','tabItems')}${tabBtn('sets','tabSets')}${tabBtn('boxes','tabBoxes')}${tabBtn('daily','tabDaily')}${tabBtn('pay','tabPay')}${tabBtn('wallet','tabWallet')}</div>${body}`);
+  if(MG.tab==='wallet') walletFill();
 }
 function ownedShop(sid){ const sh=S.shops.find(x=>x.id===sid); return editable(sh)?sh:null; }
 function commit(){ if(PROD){ Srv.dirty=true; save(); Srv.push(); return true; } if(save()) return true; toast(t('saveNeeded')); return false; }
@@ -2117,7 +2124,7 @@ async function startScan(sid){
 
 /* ----- shop registration wizard (3 steps) ----- */
 let R=null;
-function openRegister(){ if(!S.user.verified) return needVerify(openRegister); R={step:1,name:'',addr:'',lat:null,lng:null,type:'eatery',chain:'bigc',pay:{pp:'',name:'',bank:'',acct:''},emoji:'🍱',tags:[],end:'20:30',agree:false,items:[],bundles:[],sets:[]}; drawReg(); }
+function openRegister(){ if(!S.user.verified) return needVerify(openRegister); R={step:1,name:'',addr:'',lat:null,lng:null,type:'eatery',chain:'other',pay:{pp:'',name:'',bank:'',acct:''},emoji:'🍱',tags:[],end:'20:30',agree:false,items:[],bundles:[],sets:[]}; drawReg(); }
 function regCollect(){
   if(!R) return;
   const v=id=>{ const e=$(id); return e&&typeof e.value==='string'?e.value:null; };
@@ -2160,11 +2167,11 @@ function drawReg(){
   window._pending=null; let body='';
   const timed=TIMED_TYPES.includes(R.type);
   if(R.step===1){
-    body=`<label class="text-sm font-semibold" for="rn">${t('regName')}</label><input id="rn" maxlength="40" value="${esc(R.name)}" placeholder="${t('regNamePh')}" class="mb-2">
+    body=`<label class="text-sm font-semibold" for="rn">${t(R.type==='chain'?'regNameChain':'regName')}</label><input id="rn" maxlength="40" value="${esc(R.name)}" placeholder="${t(R.type==='chain'?'regNameChainPh':'regNamePh')}" class="mb-2">
       <label class="text-sm font-semibold" for="raddr">${t('shopAddr')}</label><input id="raddr" maxlength="80" value="${esc(R.addr||'')}" placeholder="${esc(t('shopAddrPh'))}" class="mb-2">
       <button class="chip mb-1" onclick="regLoc()">📍 ${t('useMyLoc')}${validLL(R.lat,R.lng)?' ✓':''}</button><div class="text-xs muted mb-2">${t('locHint')}</div>
       <label class="text-sm font-semibold" for="rt">${t('regType')}</label><select id="rt" class="mb-3" onchange="regPick('type',this.value)">${SHOP_TYPES.map(x=>`<option value="${x}" ${R.type===x?'selected':''}>${t('type_'+x)}</option>`).join('')}</select>
-      ${R.type==='chain'?`<label class="text-sm font-semibold" for="rch">${t('regChain')}</label><select id="rch" class="mb-1" onchange="regPick('chain',this.value)">${CHAINS.map(x=>`<option value="${x}" ${R.chain===x?'selected':''}>${esc(chainName(x))}</option>`).join('')}</select><div class="text-xs mb-3" style="color:var(--chili)">${t('chainRegWarn')}</div>`:''}
+      ${R.type==='chain'?`<div class="text-xs mb-3" style="color:var(--chili)">${t('chainRegWarn')}</div>`:''}
       <div class="text-sm font-semibold">${t('regIcon')}</div><div class="flex flex-wrap gap-2 my-2">${EMOJIS.map(e=>`<button class="chip ${R.emoji===e?'on':''}" style="font-size:20px" aria-pressed="${R.emoji===e}" onclick="regPick('emoji','${e}')">${e}</button>`).join('')}</div>
       ${timed?`<div class="text-sm font-semibold mt-2">${t('regTags')}</div><div class="flex flex-wrap gap-2 my-2">${['halal','veg','set','dessert'].map(x=>`<button class="chip ${R.tags.includes(x)?'on':''}" aria-pressed="${R.tags.includes(x)}" onclick="regTag('${x}')">${t('tag_'+x)}</button>`).join('')}</div>
       <label class="text-sm font-semibold" for="re">${t('regEnd')}</label><select id="re">${END_TIMES.map(x=>`<option ${R.end===x?'selected':''}>${x}</option>`).join('')}</select>`:`<div class="text-xs muted mt-2">${t('anytime')}</div>`}
@@ -2286,19 +2293,17 @@ function shopGroups(s){
 function filteredShops(){ return (S.tab==='retail'?retailShops():filteredShops0().filter(s=>s.type!=='chain')).sort(byDistance); }
 function retailShops(){
   const q=normQ(SQ);
-  return S.shops.filter(s=>s.type==='chain'&&liveOffers(s).length>0&&(q?matchQ(s):((!S.chain||s.chain===S.chain)&&withinRadius(s))));
+  return S.shops.filter(s=>s.type==='chain'&&liveOffers(s).length>0&&(q?matchQ(s):withinRadius(s)));
 }
 function setChain(k){ S.chain=CHAINS.includes(k)?k:CHAINS[0]; save(); render(); }
 function viewRetail(){
   const list=filteredShops();
-  const cc=k=>`<button class="chip ${S.chain===k?'on':''}" aria-pressed="${S.chain===k}" onclick="setChain('${k}')">${esc(chainName(k))}</button>`;
   return `<div class="display text-xl mb-1">🏬 ${t('retailTitle')}</div><div class="text-xs muted mb-3">${t('retailSub')}</div>
   <div class="card p-3"><input id="sq" type="search" maxlength="40" autocomplete="off" value="${esc(SQ)}" placeholder="🔍 ${esc(t('searchPh'))}" aria-label="${esc(t('searchPh'))}" oninput="setQuery(this.value)"></div>
   <div class="card p-4 mt-3">
     ${gpsBar()}<div class="text-xs muted mb-3">${t(PROD?'gpsPrivacyProd':'gpsPrivacy')}</div>
     <div class="flex items-center justify-between text-sm font-semibold"><label for="rad">${t('radiusLabel')}</label><span class="display" id="radv">${S.radius} ${t('km')}</span></div>
     <input id="rad" type="range" min="1" max="${S.radiusMax||3}" step="1" value="${S.radius}" style="padding:0;border:0" oninput="setRadius(+this.value)">${radiusUp()}
-    <div class="flex flex-wrap gap-2 mt-3">${CHAINS.map(cc).join('')}</div>
   </div>
   <div class="display text-lg mt-4 mb-2">${t('anytimeTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
   <div id="shoplist">${shopListHtml(list)}</div>
@@ -2320,34 +2325,48 @@ function filteredShops0(){
         : !tagFilter));
 }
 function shopListHtml(list){ return list.length?list.map(shopCard).join(''):`<div class="card p-6 text-center muted">${normQ(SQ)?t('noResults'):(S.tab==='retail'?t('retailEmpty'):t('noBoxes'))}</div>`; }
-async function openWallet(){
-  if(!PROD||!Srv.on) return;
-  if(!S.user.verified) return needVerify(()=>openWallet());
-  let w; try{ w=await Srv.rpc('wallet_info'); }catch(e){ return Srv.err(e); }
-  if(!w.on){ sheet(`<div class="display text-xl mb-2">💰 ${t('walletTitle')}</div><div class="card p-4 text-sm">${t('walletOff')}</div><button class="btn alt w-full mt-3" onclick="closeSheet()">${t('close')}</button>`); return; }
-  if(!w.terms_ok) return walletTerms(w);
-  const sm=n=>'฿'+(+n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+/* Service credit lives inside "manage shop menu" as the Credit tab (openMenuMgr tab 'wallet'). walletBodyHtml builds the content; walletFill loads it. */
+const walletSm=n=>'฿'+(+n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+function walletBodyHtml(w){
+  if(!w.on) return `<div class="card p-4 text-sm">${t('walletOff')}</div>`;
+  if(!w.terms_ok){
+    const body=String(t('walletTermsBody')).replace('{p}',+w.pct||10).split('\n').map(x=>`<p class="text-sm mb-2">${esc(x)}</p>`).join('');
+    return `<div class="display text-lg mb-2">📜 ${t('walletTermsTitle')}</div><div class="card p-3" style="max-height:45vh;overflow:auto">${body}</div><button class="btn w-full mt-3" onclick="walletAccept()">✅ ${t('walletTermsAcc')}</button>`;
+  }
+  const sm=walletSm;
   const pend=(w.pending||[]).map(x=>`<div class="flex items-center justify-between gap-2 text-sm py-1"><span class="digits">฿${(+x.amount).toFixed(2)}</span><button class="chip" onclick="window._wid=${+x.id};walletQr(${(+x.amount).toFixed(2)})">${t('walletQr')}</button></div>`).join('');
   const hist=(w.tx||[]).map(x=>`<div class="flex items-center justify-between text-sm py-1"><span>${t('walletK_'+x.kind)} <span class="muted text-xs">${esc(dateStr(new Date(+x.ts).toISOString().slice(0,10)))}</span></span><b style="color:${x.amount<0?'var(--chili)':'var(--jade)'}">${x.amount<0?'−':'+'}${sm(Math.abs(x.amount))}</b></div>`).join('');
   const rc=(w.receipts||[]).map(x=>`<div class="flex items-center justify-between gap-2 text-sm py-1"><span><span class="digits">${esc(x.no)}</span> <span class="muted text-xs">฿${(+x.paid).toLocaleString('en-US')}</span></span><button class="chip" onclick="walletReceipt(${+x.id})">🧾</button></div>`).join('');
-  try{ window._slipOn=!!(await Srv.rpc('slip_auto_on')); }catch(_){ window._slipOn=false; }
-  window._wpp={pp:String(w.pp||''),name:String(w.ppname||'')};
-  sheet(`<div class="display text-xl mb-2">💰 ${t('walletTitle')}</div>
-    <div class="card p-4 text-center"><div class="text-xs muted">${t('walletBal')}</div><div class="display text-3xl">${sm(w.balance)}</div><div class="text-xs muted mt-1">${t('walletFree')}: ${sm(w.free)}</div></div>
+  return `<div class="card p-4 text-center"><div class="text-xs muted">${t('walletBal')}</div><div class="display text-3xl">${sm(w.balance)}</div><div class="text-xs muted mt-1">${t('walletFree')}: ${sm(w.free)}</div></div>
     <div class="text-xs muted mt-2">${t('walletRule',{p:+w.pct})}</div>
     <div class="display text-lg mt-4 mb-2">${t('walletTopTitle')}</div>
     <div class="flex flex-wrap gap-2">${[100,200,500,1000].map(a=>`<button class="chip" onclick="walletTop(${a})">฿${a}</button>`).join('')}</div>
     ${pend?`<div class="display text-lg mt-4 mb-1">${t('walletPending')}</div><div class="card p-3">${pend}</div>`:''}
     ${hist?`<div class="display text-lg mt-4 mb-1">${t('walletHist')}</div><div class="card p-3">${hist}</div>`:''}
-    ${rc?`<div class="display text-lg mt-4 mb-1">${t('walletReceipts')}</div><div class="card p-3">${rc}</div>`:''}
-    <button class="btn alt w-full mt-4" onclick="closeSheet()">${t('close')}</button>`);
+    ${rc?`<div class="display text-lg mt-4 mb-1">${t('walletReceipts')}</div><div class="card p-3">${rc}</div>`:''}`;
+}
+async function walletFill(){
+  if(!$('#wbody')) return;
+  if(!PROD||!Srv.on){ $('#wbody').innerHTML=t('walletOff'); return; }
+  let w; try{ w=await Srv.rpc('wallet_info'); }catch(e){ return Srv.err(e); }
+  if(w.on){ try{ window._slipOn=!!(await Srv.rpc('slip_auto_on')); }catch(_){ window._slipOn=false; } }
+  window._wpp={pp:String(w.pp||''),name:String(w.ppname||'')};
+  const el=$('#wbody'); if(!el||MG.tab!=='wallet') return;            // the owner moved to another tab meanwhile
+  el.className=''; el.innerHTML=walletBodyHtml(w);
+}
+function openWallet(){                                                  // also used as the "back" target of the top-up QR / receipt sheets
+  if(!PROD||!Srv.on) return;
+  if(!S.user.verified) return needVerify(()=>openWallet());
+  if(mgrShops().length) return openMenuMgr(MG&&MG.sid,'wallet');
+  walletStandalone();                                                   // no shop yet: plain sheet, same content
+}
+async function walletStandalone(){
+  let w; try{ w=await Srv.rpc('wallet_info'); }catch(e){ return Srv.err(e); }
+  if(w.on){ try{ window._slipOn=!!(await Srv.rpc('slip_auto_on')); }catch(_){ window._slipOn=false; } }
+  window._wpp={pp:String(w.pp||''),name:String(w.ppname||'')};
+  sheet(`<div class="display text-xl mb-2">💰 ${t('walletTitle')}</div>${walletBodyHtml(w)}<button class="btn alt w-full mt-4" onclick="closeSheet()">${t('close')}</button>`);
 }
 
-function walletTerms(w){
-  const body=String(t('walletTermsBody')).replace('{p}',+w.pct||10).split('\n').map(x=>`<p class="text-sm mb-2">${esc(x)}</p>`).join('');
-  sheet(`<div class="display text-xl mb-2">📜 ${t('walletTermsTitle')}</div><div class="card p-3" style="max-height:55vh;overflow:auto">${body}</div>
-    <button class="btn w-full mt-3" onclick="walletAccept()">✅ ${t('walletTermsAcc')}</button><button class="btn alt w-full mt-2" onclick="closeSheet()">${t('close')}</button>`);
-}
 async function walletAccept(){ try{ await Srv.rpc('accept_wallet_terms'); openWallet(); }catch(e){ Srv.err(e); } }
 async function walletReceipt(id){
   let r; try{ r=await Srv.rpc('wallet_receipt',{p_id:id}); }catch(e){ return Srv.err(e); }
@@ -3146,7 +3165,6 @@ function viewMe(){
   <div class="display text-lg mt-5 mb-2">${t('shopMode')}</div>
   <div class="space-y-2"><button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openRegister()"><span class="font-bold">🏪 ${t('regOpen')}</span><span class="muted text-sm">1–3</span></button>
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="${mgrShops().length?`openMenuMgr(${mgrShops()[0].id})`:(PROD&&!S.user.verified?"openMenuMgr(0)":"toast(t('notEditable'))")}"><span class="font-bold">🍽️ ${t('regManage')}</span><span class="muted text-sm">📷 ฿</span></button>
-  ${PROD&&S.user.verified?`<button class="card p-4 w-full text-left font-bold mt-3" onclick="openWallet()">💰 ${t('walletBtn')}</button>`:''}
   <button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openDesk()"><span class="font-bold">📦 ${t('deskTitle')}</span>${unreadAlerts()>0?`<span class="px-2 rounded-full text-white text-xs" style="background:var(--chili)">🔔 ${unreadAlerts()}</span>`:'<span class="muted text-sm">QR</span>'}</button>
   </div>
   ${PROD&&S.user.verified?`<button class="card p-4 w-full text-left font-bold mt-3" onclick="openNameEdit()">${t('nameBtn')}${S.user.name&&!S.user.name.includes('@')?` <span class="muted font-normal">· ${esc(S.user.name)}</span>`:''}</button>`:''}
