@@ -2437,8 +2437,8 @@ async function radiusRedeem(){
   }catch(e){ if(e&&e.code==='NO_POINTS') toast(t('radiusNoPts',{n:e.n})); else if(e&&e.code==='MAX_RADIUS') toast(t('radiusMaxed')); else Srv.err(e); }
 }
 function setRadius(v){ S.radius=v; save(); if(PROD&&Srv.on){ clearTimeout(setRadius.t); setRadius.t=setTimeout(()=>Srv.pullShops(true),500); } const r=$('#radv'); if(r) r.textContent=`${v} ${t('km')}`; const l=filteredShops(); const b=$('#shoplist'); if(b) b.innerHTML=shopListHtml(l); const c=$('#shopcnt'); if(c) c.textContent=`(${l.length})`; const cv=$('#carousel'); if(cv) cv.innerHTML=carouselInner(l); }
-function tog(k,v){ const a=S[k],i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v); save(); render(); }
-function setGroup(g){ S.group=GROUPS.includes(g)?g:'food'; save(); render(); }
+function tog(k,v){ const a=S[k],i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v); SQ=''; save(); render(); }          // choosing a category leaves search mode: only that category is listed
+function setGroup(g){ S.group=GROUPS.includes(g)?g:'food'; SQ=''; save(); render(); }
 /* Swipeable shop rows (scroll-snap) above the full list. Built only from shops already in the list; tap a card to open the shop. */
 function carCard(s){
   const offers=liveOffers(s).filter(o=>o.left>0), cheap=offers.slice().sort((a,b)=>a.price-b.price)[0], timed=isTimed(s);
