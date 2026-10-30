@@ -3,7 +3,7 @@
    (supabase-setup.sql) decide what each user may do. NEVER put a secret / service_role key here. */
 window.CDE_CONFIG={
   prod:true,
-  captcha:{ sitekey:'' },                   // Cloudflare Turnstile SITE key (public). Leave '' = captcha off. The SECRET key goes only in Supabase.
+  captcha:{ sitekey:'0x4AAAAAAFsKATFGUnL1WgCG' },                   // Cloudflare Turnstile SITE key (public). Leave '' = captcha off. The SECRET key goes only in Supabase.
   legal:{                                   // shown in the Privacy Policy and Terms (PDPA) – fill in BEFORE public launch
     operator:'ภานุชิต ผลาน้อย (Phanuchit Phlanoi)',                            // legal name of the person/company running the app
     contact:'phanu.chita2522@gmail.com',                             // email or phone for privacy requests (public)
