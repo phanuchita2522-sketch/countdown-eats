@@ -268,7 +268,7 @@ const T={
   emailSendBtn:['ส่งรหัส 6 หลักไปที่อีเมล','Email me a 6-digit code'],
   emailBad:['อีเมลไม่ถูกต้อง','Invalid email address'],
   emailSent:['ส่งรหัสแล้ว ตรวจกล่องจดหมาย (และสแปม) ที่ {n}','Code sent. Check your inbox (and spam) at {n}'],
-  emailCodePh:['รหัส 6 หลัก','6-digit code'],
+  emailCodePh:['รหัสจากอีเมล','Code from the email'],
   emailVerifyBtn:['ยืนยันรหัส','Verify code'],
   emailWrong:['รหัสไม่ถูกต้องหรือหมดอายุ','Wrong or expired code'],
   emailWait:['ส่งรหัสบ่อยเกินไป รอสักครู่แล้วลองใหม่','Too many requests – wait a moment and try again'],
@@ -909,12 +909,28 @@ function applyStock(){
    Identity here is Supabase *anonymous* sign-in = one id per browser/device storage. Before a real launch switch to phone/Google login,
    otherwise clearing app data loses the owner's shops. The anon key is public by design; security comes from the RLS policies. */
 window.CDE_SUPABASE=window.CDE_SUPABASE||{url:'',key:''};
+/* Captcha (Cloudflare Turnstile). OFF until config.js has CDE_CONFIG.captcha.sitekey. The site key is public; the Turnstile SECRET goes only into Supabase (Auth > Attack Protection).
+   Returns a one-time token for Supabase auth calls (anonymous sign-in, email OTP), or undefined when captcha is not configured. */
+function capToken(){
+  const key=(window.CDE_CONFIG&&window.CDE_CONFIG.captcha&&window.CDE_CONFIG.captcha.sitekey)||'';
+  if(!key) return Promise.resolve(undefined);
+  return new Promise(async(ok,no)=>{
+    let id=null, timer=null;
+    const box=()=>{ let b=document.getElementById('cde-cap'); if(!b){ b=document.createElement('div'); b.id='cde-cap'; b.style.cssText='position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:99999'; (document.body||document.documentElement).appendChild(b); } return b; };
+    const done=(fn,v)=>{ clearTimeout(timer); try{ if(id!==null) window.turnstile.remove(id); }catch(e){} try{ box().innerHTML=''; }catch(e){} fn(v); };
+    try{
+      if(!window.turnstile){ await new Promise((a,b)=>{ const s=document.createElement('script'); s.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.onload=a; s.onerror=b; document.head.appendChild(s); }); }
+      timer=setTimeout(()=>done(no,new Error('captcha-timeout')),60000);
+      id=window.turnstile.render(box(),{sitekey:key,appearance:'interaction-only',callback:tok=>done(ok,tok),'error-callback':()=>done(no,new Error('captcha')),'timeout-callback':()=>done(no,new Error('captcha-timeout'))});
+    }catch(e){ done(no,e); }
+  });
+}
 const SB_COLS=['shops','imgs','orders','confirms'];
 async function sbBackend(cfg){
   if(!window.supabase){ await new Promise((ok,no)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'; s.onload=ok; s.onerror=no; document.head.appendChild(s); }); }
   const cl=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
   let ses=(await cl.auth.getSession()).data.session;
-  if(!ses){ const r=await cl.auth.signInAnonymously(); if(r.error||!r.data||!r.data.session) throw (r.error||new Error('auth')); ses=r.data.session; }
+  if(!ses){ const r=await cl.auth.signInAnonymously({options:{captchaToken:await capToken()}}); if(r.error||!r.data||!r.data.session) throw (r.error||new Error('auth')); ses=r.data.session; }
   const uid=String(ses.user.id);
   const db={
     doc:path=>{ const [col,id]=String(path).split('/'); return {path,id,async set(d){
@@ -1110,7 +1126,7 @@ const Srv={
       if(already){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
       const cl=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
       let ses=(await cl.auth.getSession()).data.session;
-      if(!ses){ const r=await cl.auth.signInAnonymously(); if(r.error||!r.data||!r.data.session) throw (r.error||new Error('auth')); ses=r.data.session; }
+      if(!ses){ const r=await cl.auth.signInAnonymously({options:{captchaToken:await capToken()}}); if(r.error||!r.data||!r.data.session) throw (r.error||new Error('auth')); ses=r.data.session; }
       Cloud.sb=cl; Cloud.sbUser=ses.user; Cloud.uid=String(ses.user.id); this.on=true;
       if(already&&ses.user.is_anonymous){
         let tried=false; try{ tried=sessionStorage.getItem('cde-relogin')==='1'; sessionStorage.setItem('cde-relogin','1'); }catch(e){}
@@ -2508,7 +2524,7 @@ async function emailSend(){
     if(!r||r.error){
       const m=String(r&&r.error&&r.error.message||'');
       if(r&&r.error&&/rate|seconds|too many|limit/i.test(m)) { toast(t('emailWait')); return; }
-      mode='email'; r=await cl.auth.signInWithOtp({email:e,options:{shouldCreateUser:true}});            // existing email -> sign in to that account
+      mode='email'; r=await cl.auth.signInWithOtp({email:e,options:{shouldCreateUser:true,captchaToken:await capToken()}});            // existing email -> sign in to that account
     }
     if(r&&r.error){ toast(/rate|seconds|too many|limit/i.test(String(r.error.message||''))?t('emailWait'):t('loginFail')); return; }
     EM={mode,email:e};
@@ -2628,8 +2644,8 @@ function buyGuard(sh,total,mode){                                         // -> 
 const capWorth=(w,p)=>w>p*10?0:w;                                         // absurd "original price" claims are dropped
 /* ---------- PromptPay (EMV-QR / Thai QR Payment) ---------- */
 const digits=v=>String(v==null?'':v).replace(/\D/g,'');
-const ppValid=v=>/^0\d{9}$/.test(v)||/^\d{13}$/.test(v)||/^\d{15}$/.test(v);
-const acctValid=v=>/^\d{10,15}$/.test(v);
+const ppValid=v=>(/^0\d{9}$/.test(v)||/^\d{13}$/.test(v)||/^\d{15}$/.test(v))&&!/^(\d)\1+$/.test(v);
+const acctValid=v=>/^\d{10,15}$/.test(v)&&!/^(\d)\1+$/.test(v);
 const payOk=p=>!!(p&&typeof p==='object'&&p.name&&(ppValid(p.pp)||acctValid(p.acct)));
 function crc16(s){ let c=0xFFFF; for(let i=0;i<s.length;i++){ c^=s.charCodeAt(i)<<8; for(let j=0;j<8;j++) c=(c&0x8000)?(((c<<1)^0x1021)&0xFFFF):((c<<1)&0xFFFF); } return c.toString(16).toUpperCase().padStart(4,'0'); }
 const tlv=(id,v)=>id+String(v.length).padStart(2,'0')+v;
