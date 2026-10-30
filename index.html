@@ -2456,7 +2456,7 @@ function carCard(s){
 function carRows(list){
   const now=Date.now();
   const ok=list.filter(s=>!suspended(s)&&!(isTimed(s)&&s.endAt-now<=0)&&leftOf(s)>0);
-  if(ok.length<2) return [];
+  if(ok.length<1) return [];
   const best=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.max(a,pct(o.worth,o.price)),0);
   const low=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.min(a,o.price),1e9);
   const rows=[['carNear',ok.slice().sort(byDistance)],['carDeal',ok.filter(s=>best(s)>0).sort((a,b)=>best(b)-best(a))]];
