@@ -189,6 +189,11 @@ const T={
   payBtn:['จำลองชำระ ฿{n} (เดโม)','Simulate paying ฿{n} (demo)'],
   tabPay:['รับเงิน','Payment'],
   tabWallet:['เครดิต','Credit'],
+  carNear:['ใกล้คุณ','Near you'],
+  carDeal:['ลดแรงสุด','Biggest discounts'],
+  carSoon:['ใกล้หมดเวลา','Ending soon'],
+  carCheap:['ราคาถูกสุด','Lowest price'],
+  carAll:['ดูทั้งหมด','See all'],
   walletLoading:['กำลังโหลด…','Loading…'],
   payTitle:['บัญชีรับเงินของร้าน','Shop payment account'],
   ppLabel:['PromptPay (เบอร์มือถือ 10 หลัก / รหัส e-Wallet 15 หลัก / เลขนิติบุคคล 13 หลัก)','PromptPay ID (10-digit mobile / 15-digit e-Wallet / 13-digit tax ID)'],
@@ -1350,13 +1355,13 @@ function shareOrder(id){
   const line=o.worth>o.price?t('shareDisc',{name:orderTitle(o),shop:loc(o.name),price:o.price,worth:o.worth,pct:pct(o.worth,o.price)}):t('sharePlain',{name:orderTitle(o),shop:loc(o.name),price:o.price});
   doShare(loc(o.name),[line,...placeLines(sh)].join('\n'),o.shopId?baseUrl()+'?shop='+o.shopId:undefined);
 }
-let SQ='';
+let SQ='', SEE=null;                                                      // SEE={tab,k}: the "see all" page of one carousel row (home / retail)
 const normQ=v=>String(v||'').toLowerCase().normalize('NFKC').trim();
 const allText=x=>typeof x==='string'?x:(x&&typeof x==='object'?Object.values(x).join(' '):'');
 function shopHay(sh){ const p=[allText(sh.name),sh.addr||'',t('type_'+sh.type),sh.chain?chainName(sh.chain)+' '+(CHAIN_KW[sh.chain]||''):'']; (sh.items||[]).forEach(m=>p.push(allText(m.name))); (sh.bundles||[]).forEach(b=>p.push(b.name||'')); return normQ(p.join(' ')); }
 const matchQ=sh=>shopHay(sh).includes(normQ(SQ));
 function setQuery(v){
-  SQ=String(v||'').slice(0,40); const l=filteredShops(), b=$('#shoplist'); if(b) b.innerHTML=shopListHtml(l); const c=$('#shopcnt'); if(c) c.textContent=`(${l.length})`;
+  SQ=String(v||'').slice(0,40); const l=filteredShops(), b=$('#shoplist'); if(b) b.innerHTML=shopListHtml(l); const c=$('#shopcnt'); if(c) c.textContent=`(${l.length})`; const cv=$('#carousel'); if(cv) cv.innerHTML=carouselInner(l);
 }
 
 /* ---------- Real distance from the buyer's GPS (kept on this device only) ---------- */
@@ -1456,7 +1461,7 @@ function closeSheet(){ $('#layer').innerHTML=''; }
 function flashOn(){ const h=new Date(Date.now()+BKK).getUTCHours(); return (DEMO_MODE&&S.demo) || (h>=18 && h<21); }
 function nextStart(){ const b=new Date(Date.now()+BKK); let x=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate(),11,0,0); if(Date.now()>=x) x+=864e5; return x; }
 function suspended(s){ return s.trust<3.5||Cloud.flagged.has(s.id); }
-function setTab(k){ if(k!==S.tab) SQ=''; S.tab=k; if(k==='fridge'&&typeof CM!=='undefined') CM.tried=false; save(); render(); window.scrollTo(0,0); }
+function setTab(k){ if(k!==S.tab) SQ=''; SEE=null; S.tab=k; if(k==='fridge'&&typeof CM!=='undefined') CM.tried=false; save(); render(); window.scrollTo(0,0); }
 function timeStr(ms){ return new Date(ms).toLocaleTimeString(LOCALE[S.lang],{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Bangkok'}); }
 function dateStr(iso){ return new Date(iso+'T00:00:00Z').toLocaleDateString(LOCALE[S.lang],{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}); }
 function ptitle(p){ return loc(p.title); }
@@ -2265,7 +2270,7 @@ function render(){
   const night=flashOn();
   $('#app').classList.toggle('night',night && S.tab==='home');
   $('#hdr').innerHTML=header(night);
-  $('#main').innerHTML=({home:viewHome,retail:viewRetail,fridge:viewFridge,orders:viewOrders,me:viewMe})[S.tab]();
+  $('#main').innerHTML=(SEE&&SEE.tab===S.tab&&(S.tab==='home'||S.tab==='retail')&&viewSeeAll())||({home:viewHome,retail:viewRetail,fridge:viewFridge,orders:viewOrders,me:viewMe})[S.tab]();
   $('#banner').innerHTML=Ads.banner();
   $('#nav').innerHTML=[['home','🏮','navHome'],['retail','🏬','navRetail'],['fridge','🧊','navFridge'],['orders','🎟️','navOrders'],['me','🦸','navMe']]
     .map(([k,i,l])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')" aria-label="${t(l)}"><span class="ic">${i}</span>${t(l)}</button>`).join('');
@@ -2305,6 +2310,7 @@ function viewRetail(){
     <div class="flex items-center justify-between text-sm font-semibold"><label for="rad">${t('radiusLabel')}</label><span class="display" id="radv">${S.radius} ${t('km')}</span></div>
     <input id="rad" type="range" min="1" max="${S.radiusMax||3}" step="1" value="${S.radius}" style="padding:0;border:0" oninput="setRadius(+this.value)">${radiusUp()}
   </div>
+  <div id="carousel">${carouselInner(list)}</div>
   <div class="display text-lg mt-4 mb-2">${t('anytimeTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
   <div id="shoplist">${shopListHtml(list)}</div>
   <div class="card p-3 mt-3 text-xs muted">${t('chainNote')}</div>
@@ -2430,9 +2436,48 @@ async function radiusRedeem(){
     Srv.pullShops(true);
   }catch(e){ if(e&&e.code==='NO_POINTS') toast(t('radiusNoPts',{n:e.n})); else if(e&&e.code==='MAX_RADIUS') toast(t('radiusMaxed')); else Srv.err(e); }
 }
-function setRadius(v){ S.radius=v; save(); if(PROD&&Srv.on){ clearTimeout(setRadius.t); setRadius.t=setTimeout(()=>Srv.pullShops(true),500); } const r=$('#radv'); if(r) r.textContent=`${v} ${t('km')}`; const l=filteredShops(); const b=$('#shoplist'); if(b) b.innerHTML=shopListHtml(l); const c=$('#shopcnt'); if(c) c.textContent=`(${l.length})`; }
+function setRadius(v){ S.radius=v; save(); if(PROD&&Srv.on){ clearTimeout(setRadius.t); setRadius.t=setTimeout(()=>Srv.pullShops(true),500); } const r=$('#radv'); if(r) r.textContent=`${v} ${t('km')}`; const l=filteredShops(); const b=$('#shoplist'); if(b) b.innerHTML=shopListHtml(l); const c=$('#shopcnt'); if(c) c.textContent=`(${l.length})`; const cv=$('#carousel'); if(cv) cv.innerHTML=carouselInner(l); }
 function tog(k,v){ const a=S[k],i=a.indexOf(v); i>=0?a.splice(i,1):a.push(v); save(); render(); }
 function setGroup(g){ S.group=GROUPS.includes(g)?g:'food'; save(); render(); }
+/* Swipeable shop rows (scroll-snap) above the full list. Built only from shops already in the list; tap a card to open the shop. */
+function carCard(s){
+  const offers=liveOffers(s).filter(o=>o.left>0), cheap=offers.slice().sort((a,b)=>a.price-b.price)[0], timed=isTimed(s);
+  const im=liveItems(s).map(x=>safeImg(x.img)).find(x=>x&&x!==PH_IMG);
+  const bg=im?`<img src="${im}" alt="" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;background:var(--soft)">${esc(s.emoji)}</div>`;
+  return `<button type="button" onclick="openShop(${s.id})" style="position:relative;flex:0 0 78%;max-width:300px;height:170px;border-radius:18px;overflow:hidden;scroll-snap-align:start;text-align:left;color:#fff;border:0;padding:0">${bg}
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,.05) 70%)"></div>
+    <div style="position:absolute;left:12px;right:12px;bottom:10px">
+      <div class="display" style="font-size:17px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(shopTitle(s))}</div>
+      <div style="font-size:12px;opacity:.95;margin-top:2px">★ ${Number(s.trust).toFixed(1)} · ${esc(distLabel(s))} · ${timed&&s.endHM?'⏰ '+esc(s.endHM):esc(t('anytime'))}</div>
+    </div>
+    ${cheap?`<div style="position:absolute;right:10px;top:10px;background:rgba(0,0,0,.72);border-radius:12px;padding:3px 10px;font-weight:700">${esc(t('fromPrice',{n:cheap.price}))}${cheap.worth>cheap.price?' <span style="font-size:11px;color:var(--lantern)">-'+pct(cheap.worth,cheap.price)+'%</span>':''}</div>`:''}
+  </button>`;
+}
+function carRows(list){
+  const now=Date.now();
+  const ok=list.filter(s=>!suspended(s)&&!(isTimed(s)&&s.endAt-now<=0)&&leftOf(s)>0);
+  if(ok.length<2) return [];
+  const best=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.max(a,pct(o.worth,o.price)),0);
+  const low=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.min(a,o.price),1e9);
+  const rows=[['carNear',ok.slice().sort(byDistance)],['carDeal',ok.filter(s=>best(s)>0).sort((a,b)=>best(b)-best(a))]];
+  if(S.tab==='retail') rows.push(['carCheap',ok.slice().sort((a,b)=>low(a)-low(b))]);
+  else rows.push(['carSoon',ok.filter(s=>isTimed(s)).sort((a,b)=>a.endAt-b.endAt)]);
+  return rows.filter(r=>r[1].length);
+}
+function carouselInner(list){
+  if(normQ(SQ)) return '';
+  return carRows(list).map(r=>`<div class="mt-4"><div class="flex items-center justify-between mb-2"><div class="display text-lg">${t(r[0])}</div><button class="text-sm font-semibold" style="color:var(--jade)" onclick="seeAll('${r[0]}')">${t('carAll')}</button></div>
+    <div style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px">${r[1].slice(0,8).map(carCard).join('')}</div></div>`).join('');
+}
+function seeAll(k){ SEE={tab:S.tab,k}; render(); window.scrollTo(0,0); }
+function seeBack(){ SEE=null; render(); window.scrollTo(0,0); }
+function viewSeeAll(){                                                    // one row of the carousel as a full page, same rules as the row (no 8-shop cap)
+  const row=carRows(filteredShops()).find(r=>r[0]===SEE.k);
+  if(!row){ SEE=null; return ''; }
+  return `<button class="chip mb-3" onclick="seeBack()">← ${t('back')}</button>
+    <div class="display text-xl">${t(SEE.k)}</div><div class="text-xs muted mb-3">${t(S.tab==='retail'?'navRetail':'navHome')} · ${t('radiusLabel')} ${S.radius} ${t('km')} · <span id="seecnt">${row[1].length}</span></div>
+    <div id="seelist">${row[1].map(shopCard).join('')}</div>`;
+}
 function viewHome(){
   const fl=flashOn(), list=filteredShops(), useFood=!S.group||S.group==='food';
   const closed=fl?'':`<div class="card p-6 text-center mt-2">
@@ -2453,6 +2498,7 @@ function viewHome(){
     <div class="flex flex-wrap gap-2 mt-3">${GROUPS.map(gchip).join('')}</div>
     ${useFood?`<div class="flex flex-wrap gap-2 mt-2">${['sweet','drink'].map(x=>chip('itemCat',x)).join('')}${fl?['halal','veg'].map(x=>chip('dietary',x)).join('')+['set'].map(x=>chip('category',x)).join(''):''}</div>`:''}
   </div>
+  <div id="carousel">${carouselInner(list)}</div>
   <div class="flex items-center justify-between gap-2 mt-4 mb-2"><div class="display text-lg">${fl?t('boxesNear'):t('anytimeTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
     ${fl?`<button class="text-sm font-semibold underline text-right" style="color:var(--chili)" onclick="rewardPoints()">${t('watchAd')}</button>`:''}</div>
   <div id="shoplist">${shopListHtml(list)}</div>
