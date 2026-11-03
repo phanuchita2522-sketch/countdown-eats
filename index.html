@@ -390,6 +390,7 @@ const T={
   b2d:['รับกล่องสุ่มครบ 5 กล่อง','Pick up 5 boxes'],
   b3n:['มิตรแท้ชาวคอนโด','Condo Best Buddy'],
   b3d:['แบ่งปัน/รับของในตึกครบ 3 ครั้ง','Share or receive food in your building 3 times'],
+  badgeToastProd:['ได้เหรียญ “{n}” แล้ว','Badge unlocked: “{n}”'],
   badgeToast:['ได้เหรียญ “{n}” +30 แต้ม','Badge unlocked: “{n}” +30 pts'],
   radiusUpBtn:['ใช้ 100 แต้ม ขยายรัศมีเป็น {n} กม.','Spend 100 pts to extend radius to {n} km'],
   radiusNoPts:['แต้มไม่พอ ต้องใช้ 100 แต้ม (ตอนนี้มี {n})','Not enough points: need 100 (you have {n})'],
@@ -3229,7 +3230,7 @@ const BADGES=[
   {k:'legend',e:'🏆',n:'b2n',d:'b2d',ok:()=>S.boxes>=5},
   {k:'neighbor',e:'🤝',n:'b3n',d:'b3d',ok:()=>S.fridgeActs>=3},
 ];
-function checkBadges(){ BADGES.forEach(b=>{ if(b.ok()&&!S.badges[b.k]){ S.badges[b.k]=true; S.points+=PROD?0:30; setTimeout(()=>toast(t('badgeToast',{n:t(b.n)})),500);} }); }
+function checkBadges(){ BADGES.forEach(b=>{ if(b.ok()&&!S.badges[b.k]){ S.badges[b.k]=true; S.points+=PROD?0:30; setTimeout(()=>toast(t(PROD?'badgeToastProd':'badgeToast',{n:t(b.n)})),500);} }); }
 /* ---------- Personal expiry reminders: private to this device, survives logout ---------- */
 const EXPKEY='cde-expiry-v1', EXP_EMO=['🥛','💊','🧴','🧾'];
 const EXP=(()=>{ try{ const j=JSON.parse(localStorage.getItem(EXPKEY)||'null'); if(j&&Array.isArray(j.items)){ j.seq=+j.seq||0; return j; } }catch(e){} return {items:[],seq:0}; })();
@@ -3310,9 +3311,7 @@ function viewMe(){
   <div class="space-y-2">${BADGES.map(b=>{const on=S.badges[b.k];return `<div class="card p-3 flex items-center gap-3" style="opacity:${on?1:.55}"><div class="text-3xl">${on?b.e:'🔒'}</div><div><div class="font-bold">${t(b.n)}</div><div class="text-sm muted">${t(b.d)}</div></div></div>`}).join('')}</div>
   ${PROD?`<div class="display text-lg mt-5 mb-2">${t('redeemTitle')}</div>
   <div class="card p-4 flex items-center justify-between gap-2"><div><div class="font-bold">${t('radiusCardTitle')}</div><div class="text-sm muted">${t('radiusCardSub',{n:S.radiusMax||3})}</div></div>
-    <button class="btn py-2 shrink-0" ${(S.radiusMax||3)>=100?'disabled':''} onclick="radiusRedeem()">${t('redeemBtn')}</button></div>`:`  <div class="display text-lg mt-5 mb-2">${t('redeemTitle')}</div>
-  <div class="card p-4 flex items-center justify-between gap-2"><div><div class="font-bold">${t('couponName')}</div><div class="text-sm muted">${t('couponCost',{n:S.coupons})}</div></div>
-    <button class="btn py-2 shrink-0" ${S.points<100?'disabled':''} onclick="redeem()">${t('redeemBtn')}</button></div>`}
+    <button class="btn py-2 shrink-0" ${(S.radiusMax||3)>=100?'disabled':''} onclick="radiusRedeem()">${t('redeemBtn')}</button></div>`:''}
   <div class="card p-3 mt-5 text-xs" style="color:${(Cloud.on||Srv.on)&&!Cloud.ro?'var(--jade)':'var(--muted)'}">${(Cloud.on||Srv.on)?(Cloud.ro?t('cloudRO'):t('cloudOn')):t('cloudOff')}</div>
   <div class="display text-lg mt-5 mb-2">${t('shopMode')}</div>
   <div class="space-y-2"><button class="card p-4 w-full text-left flex items-center justify-between gap-2" onclick="openRegister()"><span class="font-bold">🏪 ${t('regOpen')}</span><span class="muted text-sm">1–3</span></button>
