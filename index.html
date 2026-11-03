@@ -189,8 +189,10 @@ const T={
   payBtn:['จำลองชำระ ฿{n} (เดโม)','Simulate paying ฿{n} (demo)'],
   tabPay:['รับเงิน','Payment'],
   tabWallet:['เครดิต','Credit'],
-  carNear:['ใกล้คุณ','Near you'],
-  carDeal:['ลดแรงสุด','Biggest discounts'],
+  carNear:['ร้านและเมนูใกล้คุณ','Shops & menus near you'],
+  carDeal:['ร้านและเมนูลดแรงสุด','Shops & menus: biggest discounts'],
+  opensAt:['เปิดขาย {h} น.','Opens {h}'],
+  allShopsTitle:['ร้านและเมนูทั้งหมด','All shops & menus'],
   carSoon:['ใกล้หมดเวลา','Ending soon'],
   carCheap:['ราคาถูกสุด','Lowest price'],
   carAll:['ดูทั้งหมด','See all'],
@@ -1458,6 +1460,7 @@ const stars=v=>`<span style="color:var(--lantern)">★</span> ${Number(v).toFixe
 function toast(m){ const el=$('#toast'); el.textContent=m; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.add('hidden'),2600); }
 function sheet(html){ $('#layer').innerHTML=`<div class="sheet" onclick="if(event.target===this)closeSheet()"><div role="dialog" aria-modal="true">${html}</div></div>`; }
 function closeSheet(){ $('#layer').innerHTML=''; }
+const FLASH_OPEN='18:00';                                                  // mystery boxes go on sale 18:00-21:00 (see flashOn); before that shops and menus are visible but cannot be bought
 function flashOn(){ const h=new Date(Date.now()+BKK).getUTCHours(); return (DEMO_MODE&&S.demo) || (h>=18 && h<21); }
 function nextStart(){ const b=new Date(Date.now()+BKK); let x=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate(),11,0,0); if(Date.now()>=x) x+=864e5; return x; }
 function suspended(s){ return s.trust<3.5||Cloud.flagged.has(s.id); }
@@ -2323,7 +2326,6 @@ function filteredShops0(){
   const fl=flashOn(), useFood=!S.group||S.group==='food', tagFilter=useFood&&(S.dietary.length||S.category.length);
   return S.shops.filter(s=>withinRadius(s)
     && liveOffers(s).length>0                                        // nothing left on the shelf -> the shop is cleared from the list
-    && (fl||!isTimed(s))
     && (!S.group||shopGroups(s).has(S.group))
     && (!useFood||!S.itemCat.length||shopHasCat(s))
     && (isTimed(s)
@@ -2448,7 +2450,7 @@ function carCard(s){
     <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,.05) 70%)"></div>
     <div style="position:absolute;left:12px;right:12px;bottom:10px">
       <div class="display" style="font-size:17px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(shopTitle(s))}</div>
-      <div style="font-size:12px;opacity:.95;margin-top:2px">★ ${Number(s.trust).toFixed(1)} · ${esc(distLabel(s))} · ${timed&&s.endHM?'⏰ '+esc(s.endHM):esc(t('anytime'))}</div>
+      <div style="font-size:12px;opacity:.95;margin-top:2px">★ ${Number(s.trust).toFixed(1)} · ${esc(distLabel(s))} · ${timed?(flashOn()?(s.endHM?'⏰ '+esc(s.endHM):''):'🕕 '+esc(t('opensAt',{h:FLASH_OPEN}))):esc(t('anytime'))}</div>
     </div>
     ${cheap?`<div style="position:absolute;right:10px;top:10px;background:rgba(0,0,0,.72);border-radius:12px;padding:3px 10px;font-weight:700">${esc(t('fromPrice',{n:cheap.price}))}${cheap.worth>cheap.price?' <span style="font-size:11px;color:var(--lantern)">-'+pct(cheap.worth,cheap.price)+'%</span>':''}</div>`:''}
   </button>`;
@@ -2461,7 +2463,7 @@ function carRows(list){
   const low=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.min(a,o.price),1e9);
   const rows=[['carNear',ok.slice().sort(byDistance)],['carDeal',ok.filter(s=>best(s)>0).sort((a,b)=>best(b)-best(a))]];
   if(S.tab==='retail') rows.push(['carCheap',ok.slice().sort((a,b)=>low(a)-low(b))]);
-  else rows.push(['carSoon',ok.filter(s=>isTimed(s)).sort((a,b)=>a.endAt-b.endAt)]);
+  else if(flashOn()) rows.push(['carSoon',ok.filter(s=>isTimed(s)).sort((a,b)=>a.endAt-b.endAt)]);
   return rows.filter(r=>r[1].length);
 }
 function carouselInner(list){
@@ -2499,7 +2501,7 @@ function viewHome(){
     <div class="flex flex-wrap gap-2 mt-3">${GROUPS.map(gchip).join('')}</div>
     ${useFood?`<div class="flex flex-wrap gap-2 mt-2">${['sweet','drink'].map(x=>chip('itemCat',x)).join('')}${fl?['halal','veg'].map(x=>chip('dietary',x)).join('')+['set'].map(x=>chip('category',x)).join(''):''}</div>`:''}
   </div>
-  <div class="flex items-center justify-between gap-2 mt-4 mb-2"><div class="display text-lg">${fl?t('boxesNear'):t('anytimeTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
+  <div class="flex items-center justify-between gap-2 mt-4 mb-2"><div class="display text-lg">${fl?t('boxesNear'):t('allShopsTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
     ${fl?`<button class="text-sm font-semibold underline text-right" style="color:var(--chili)" onclick="rewardPoints()">${t('watchAd')}</button>`:''}</div>
   <div id="shoplist">${shopListHtml(list)}</div>
   ${fl?'':`<div class="card p-4 mt-3 text-sm muted">${t('waitHint')}</div>`}
@@ -2531,12 +2533,12 @@ function shopCard(s){
     <div class="perf mx-4"></div>
     <div class="p-4 flex items-end justify-between gap-2">
       <div>
-        ${timed?`<div class="text-xs muted">${t('timeLeft')}</div><div class="digits text-2xl" style="color:${left<1800000?'var(--chili)':'var(--text)'}" data-end="${s.endAt}">${over?t('ended'):fmt(left)}</div>`:`<div class="display text-lg">${t('anytime')}</div>`}
+        ${timed&&!flashOn()&&!over?`<div class="display text-lg">🕕 ${t('opensAt',{h:FLASH_OPEN})}</div>`:timed?`<div class="text-xs muted">${t('timeLeft')}</div><div class="digits text-2xl" style="color:${left<1800000?'var(--chili)':'var(--text)'}" data-end="${s.endAt}">${over?t('ended'):fmt(left)}</div>`:`<div class="display text-lg">${t('anytime')}</div>`}
         <div class="text-xs muted">${t('stockLeft',{n:tl})}</div>
       </div>
       <div class="text-right">
         ${cheap?`${cheap.worth>cheap.price?`<div><span class="text-xs muted line-through">฿${cheap.worth}</span> ${pctBadge(cheap.worth,cheap.price)}</div>`:''}<div class="display text-2xl">${t('fromPrice',{n:cheap.price})}</div>`:''}
-        <button class="btn mt-1 py-2" ${dis?'disabled':''} onclick="openShop(${s.id})">${sus?t('suspended'):out?t('soldOut'):over?t('ended'):t('viewAndBuy')}</button>
+        <button class="btn mt-1 py-2" ${dis?'disabled':''} onclick="openShop(${s.id})">${sus?t('suspended'):out?t('soldOut'):over?t('ended'):(timed&&!flashOn())?t('opensAt',{h:FLASH_OPEN}):t('viewAndBuy')}</button>
       </div>
     </div></div>`;
 }
