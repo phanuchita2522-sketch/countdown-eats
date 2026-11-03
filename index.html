@@ -102,11 +102,18 @@ const LOCALE={th:'th-TH',en:'en-GB'};
 const LIDX={th:0,en:1};
 
 /* ---------- AdMob (units as provided) ---------- */
-const ADMOB={
-  banner:'ca-app-pub-4208653475764902/2964083959',
-  interstitial:'ca-app-pub-4208653475764902/4619820097',
-  rewarded:'ca-app-pub-4208653475764902/7222661657',
+const APP_SCHEME='com.countdowneats.app://auth';                           // deep link the system browser returns to after Google/LINE login
+const ADMOB_LIVE={                                                         // real units of the Android app "CountDown Eats" (public IDs)
+  banner:'ca-app-pub-4208653475764902/8647412595',
+  interstitial:'ca-app-pub-4208653475764902/6571913596',
+  rewarded:'ca-app-pub-4208653475764902/3869281522',
 };
+const ADMOB_TEST={                                                         // Google's official test units: safe to tap while developing
+  banner:'ca-app-pub-3940256099942544/6300978111',
+  interstitial:'ca-app-pub-3940256099942544/1033173712',
+  rewarded:'ca-app-pub-3940256099942544/5224354917',
+};
+const ADMOB=(window.CDE_CONFIG&&window.CDE_CONFIG.adLive===true)?ADMOB_LIVE:ADMOB_TEST;   // real ads only when the app's config.js says adLive:true
 
 /* ---------- Translations: key:[th,en] ---------- */
 const WTERMS_TH="1. เครดิตระบบคือยอดเงินที่ร้านค้าเติมล่วงหน้าเพื่อชำระค่าบริการแพลตฟอร์ม ไม่ใช่เงินฝากหรือบัญชีเงินออม ไม่มีดอกเบี้ย\n2. ร้านค้าเติมเครดิตด้วยการโอนพร้อมเพย์ตามยอดที่แอประบุ (มีเศษสตางค์ไว้จับคู่รายการ เครดิตที่ได้นับเป็นจำนวนเต็มบาท) เครดิตเข้าหลังผู้ดูแลหรือระบบตรวจสอบยอดแล้ว\n3. เมื่อเปิดใช้ค่าบริการ ระบบหักค่าบริการตามอัตราที่แสดงในแอป (ปัจจุบัน {p}% ของยอดขายแต่ละออเดอร์ ยกเว้นตู้เย็นชุมชน) เมื่อร้านยืนยันรับของ ระบบกันวงเงินเครดิตไว้ตอนมีออเดอร์ หากเครดิตไม่พอ ร้านจะลงขายรายการใหม่หรือรับออเดอร์ใหม่ไม่ได้ จนกว่าจะเติมเพิ่ม\n4. ยอดขายที่ลูกค้าจ่ายให้ร้านโดยตรงเป็นของร้านค้า แพลตฟอร์มไม่ได้รับหรือถือเงินส่วนนั้น\n5. ค่าบริการอาจเปลี่ยนอัตราได้ โดยแจ้งในแอปล่วงหน้า ออเดอร์ที่สร้างแล้วใช้อัตราเดิม\n6. เครดิตที่เติมแล้วไม่สามารถถอนเป็นเงินสดและไม่โอนให้ผู้อื่น ยกเว้นกรณีปิดบริการหรือระบบหักผิดพลาด ซึ่งผู้ดูแลจะคืนหรือปรับยอดตามจริง\n7. ใบเสร็จออกให้ทุกครั้งที่เติมเครดิต แสดงยอดก่อนภาษี ภาษีมูลค่าเพิ่ม (ถ้าผู้ให้บริการจดทะเบียน) และยอดรวม ข้อมูลผู้ให้บริการเป็นไปตามที่ระบุในใบเสร็จ ณ วันที่ออก\n8. หากพบการโอนผิดยอดหรือผิดบัญชี ให้ติดต่อผู้ดูแลพร้อมสลิป ผู้ดูแลอาจระงับการใช้เครดิตระหว่างตรวจสอบ ข้อมูลสลิปใช้เพื่อตรวจสอบการชำระเงินเท่านั้น (ดูนโยบายความเป็นส่วนตัว)\n9. ผู้ดูแลระงับหรือปิดบัญชีร้านที่ฉ้อโกงหรือผิดข้อกำหนดได้ และอาจเปลี่ยนเงื่อนไขนี้โดยแจ้งในแอป การเติมเครดิตครั้งถัดไปถือว่ายอมรับเงื่อนไขฉบับใหม่", WTERMS_EN="Platform credit is prepaid money used to pay platform service fees. It is not a deposit and earns no interest.\nTop up by PromptPay transfer for the amount shown (extra satang only match your transfer; credit is whole baht). Credit is added once the transfer is verified.\nWhen fees are enabled, the platform deducts the fee shown in the app ({p}% of each order, community fridge excluded) when you confirm pickup. Credit is reserved for open orders. With insufficient credit you cannot list items or take new orders until you top up.\nSales paid by customers go directly to the shop; the platform does not hold that money.\nFee rates may change with notice in the app; existing orders keep their rate.\nCredit is non-refundable in cash and non-transferable, except if the service closes or a deduction error occurs, which the admin will correct.\nA receipt is issued per top-up showing amount before tax, VAT (if the provider is VAT-registered) and total, with provider details as of issue date.\nReport wrong amounts or accounts with your slip. Credit may be frozen during review. Slip data is used only to verify payment.\nThe admin may suspend fraudulent or non-compliant shops and update these terms with notice; topping up again means accepting the new version.";
@@ -434,6 +441,22 @@ const T={
   resetSub:['ออเดอร์ แต้ม และการยืนยันตัวตนทั้งหมดจะหายไป','All orders, points and verification will be lost.'],
   cancel:['ยกเลิก','Cancel'],
   clearBtn:['ล้างข้อมูล','Clear'],
+  expMy:['⏰ เตือนวันหมดอายุของฉัน','⏰ My expiry reminders'],
+  expSub:['เก็บในเครื่องนี้เท่านั้น ตั้งวันและจำนวนวันที่จะให้เตือนเองได้','Stored on this device only. Set the date and how early to be reminded.'],
+  expManage:['เพิ่ม / จัดการ','Add / manage'],
+  expEmpty:['ยังไม่มีรายการ กดเพิ่มของที่อยากให้เตือน เช่น นม ยา ครีม','Nothing yet. Add things you want to be reminded about, like milk, medicine or lotion.'],
+  expDueN:['ใกล้หมดอายุ/หมดแล้ว {n} รายการ','{n} item(s) expiring soon or expired'],
+  expName:['ชื่อสิ่งของ','Item name'], expNamePh:['เช่น นมสด, ยาแก้แพ้, ครีมกันแดด','e.g. milk, allergy pills, sunscreen'],
+  expDate:['วันหมดอายุ','Expiry date'], expLead:['เตือนล่วงหน้า','Remind me'],
+  expLeadOpt:['{n} วันก่อน','{n} day(s) before'], expLead1:['เตือนก่อน {n} วัน','remind {n} d before'],
+  expCat:['ประเภท','Type'], expC0:['🥛 อาหาร/เครื่องดื่ม','🥛 Food & drink'], expC1:['💊 ยา/อาหารเสริม','💊 Medicine/supplements'], expC2:['🧴 เครื่องสำอาง/ของใช้','🧴 Cosmetics/household'], expC3:['🧾 อื่นๆ','🧾 Other'],
+  expAddBtn:['เพิ่มรายการ','Add item'], expDel:['ลบ','Delete'],
+  expNeedName:['กรอกชื่อสิ่งของ','Enter an item name'], expNeedDate:['เลือกวันหมดอายุ','Pick an expiry date'], expFull:['เก็บได้สูงสุด 100 รายการ','Up to 100 items'],
+  expAdded:['เพิ่มแล้ว','Added'],
+  expToday:['หมดอายุวันนี้','Expires today'], expOver:['หมดแล้ว {n} วัน','Expired {n} d ago'], expLeft:['อีก {n} วัน','{n} d left'],
+  expNotifSoon:['{name} จะหมดอายุใน {n} วัน','{name} expires in {n} day(s)'], expNotifToday:['{name} หมดอายุวันนี้','{name} expires today'],
+  expBoot:['มี {n} รายการใกล้หมดอายุหรือหมดแล้ว ดูที่โปรไฟล์','{n} item(s) expiring soon or expired. See your profile.'],
+  expAppNote:['ในแอป Android จะมีแจ้งเตือนเด้งตอน 9 โมงเช้าของวันที่ตั้งไว้','The Android app also sends a notification at 9:00 on the reminder day.'],
   adLimit:['วันนี้รับแต้มจากโฆษณาครบ 5 ครั้งแล้ว พรุ่งนี้มาใหม่นะ','You’ve earned points from 5 ads today. Come back tomorrow!'],
   adReward:['ได้รับ +20 แต้ม (วันนี้ {n}/5)','+20 pts earned (today {n}/5)'],
 
@@ -804,16 +827,23 @@ function loc(x){ return typeof x==='string'?x:((x&&(x[S.lang]||x.en||x.th))||'')
 const Ads={
   native(){ try{ return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.AdMob; }catch(e){return null;} },
   lastInter:0,
+  ready:false, shown:false, made:false,
   async init(){
     const A=this.native(); if(!A) return;
-    try{ await A.initialize({}); await A.showBanner({adId:ADMOB.banner,adSize:'ADAPTIVE_BANNER',position:'BOTTOM_CENTER',margin:72}); }catch(e){console.warn(e)}
+    try{ await A.initialize({}); this.ready=true; this.sync(); }catch(e){console.warn(e)}
+  },
+  want(){ return ['home','retail','orders'].includes(S.tab)&&!document.getElementById('layer').innerHTML; },   // never over checkout / payment sheets
+  async sync(){
+    const A=this.native(); if(!A||!this.ready) return;
+    const w=this.want(); if(w===this.shown) return; this.shown=w;
+    try{ if(!w) await A.hideBanner(); else if(this.made) await A.resumeBanner(); else { this.made=true; await A.showBanner({adId:ADMOB.banner,adSize:'ADAPTIVE_BANNER',position:'BOTTOM_CENTER',margin:72}); } }catch(e){ this.shown=!w; }
   },
   banner(){
     if(this.native()||PROD) return '';
     return `<div class="mx-2 mb-1 rounded-lg text-center text-xs py-2" style="background:var(--soft);border:1px dashed var(--line);color:var(--muted)">${t('adBanner')} · ${ADMOB.banner.slice(-10)}</div>`;
   },
   async interstitial(){
-    if(Date.now()-this.lastInter<60000) return;
+    if(Date.now()-this.lastInter<180000) return;                                // at most one interstitial every 3 minutes
     const A=this.native(); if(!A&&PROD) return;
     if(A){ try{ await A.prepareInterstitial({adId:ADMOB.interstitial}); await A.showInterstitial(); this.lastInter=Date.now(); }catch(e){} return; }
     this.lastInter=Date.now();
@@ -1141,7 +1171,7 @@ const Srv={
       Cloud.sb=cl; Cloud.sbUser=ses.user; Cloud.uid=String(ses.user.id); this.on=true;
       if(already&&ses.user.is_anonymous){
         let tried=false; try{ tried=sessionStorage.getItem('cde-relogin')==='1'; sessionStorage.setItem('cde-relogin','1'); }catch(e){}
-        if(!tried){ toast(t('reloginExisting')); const r=await cl.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+location.pathname}}); if(!(r&&r.error)) return; }
+        if(!tried){ toast(t('reloginExisting')); const r=await oauthGo(cl,'google',{},false); if(!(r&&r.error)) return; }
         else toast(t('loginFail'));
       }
       if(!ses.user.is_anonymous){ try{ sessionStorage.removeItem('cde-relogin'); }catch(e){} }
@@ -1458,8 +1488,8 @@ const pad=n=>String(n).padStart(2,'0');
 const fmt=ms=>{ ms=Math.max(0,ms); const s=Math.floor(ms/1000); return `${pad(Math.floor(s/3600))}:${pad(Math.floor(s%3600/60))}:${pad(s%60)}`; };
 const stars=v=>`<span style="color:var(--lantern)">★</span> ${Number(v).toFixed(1)}`;
 function toast(m){ const el=$('#toast'); el.textContent=m; el.classList.remove('hidden'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.add('hidden'),2600); }
-function sheet(html){ $('#layer').innerHTML=`<div class="sheet" onclick="if(event.target===this)closeSheet()"><div role="dialog" aria-modal="true">${html}</div></div>`; }
-function closeSheet(){ $('#layer').innerHTML=''; }
+function sheet(html){ $('#layer').innerHTML=`<div class="sheet" onclick="if(event.target===this)closeSheet()"><div role="dialog" aria-modal="true">${html}</div></div>`; Ads.sync(); }
+function closeSheet(){ $('#layer').innerHTML=''; Ads.sync(); }
 const FLASH_OPEN='18:00';                                                  // mystery boxes go on sale 18:00-21:00 (see flashOn); before that shops and menus are visible but cannot be bought
 function flashOn(){ const h=new Date(Date.now()+BKK).getUTCHours(); return (DEMO_MODE&&S.demo) || (h>=18 && h<21); }
 function nextStart(){ const b=new Date(Date.now()+BKK); let x=Date.UTC(b.getUTCFullYear(),b.getUTCMonth(),b.getUTCDate(),11,0,0); if(Date.now()>=x) x+=864e5; return x; }
@@ -2274,9 +2304,9 @@ function render(){
   $('#app').classList.toggle('night',night && S.tab==='home');
   $('#hdr').innerHTML=header(night);
   $('#main').innerHTML=(SEE&&SEE.tab===S.tab&&(S.tab==='home'||S.tab==='retail')&&viewSeeAll())||({home:viewHome,retail:viewRetail,fridge:viewFridge,orders:viewOrders,me:viewMe})[S.tab]();
-  $('#banner').innerHTML=Ads.banner();
+  $('#banner').innerHTML=Ads.banner(); Ads.sync();
   $('#nav').innerHTML=[['home','🏮','navHome'],['retail','🏬','navRetail'],['fridge','🧊','navFridge'],['orders','🎟️','navOrders'],['me','🦸','navMe']]
-    .map(([k,i,l])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')" aria-label="${t(l)}"><span class="ic">${i}</span>${t(l)}</button>`).join('');
+    .map(([k,i,l])=>`<button class="${S.tab===k?'on':''}" onclick="setTab('${k}')" aria-label="${t(l)}"><span class="ic" style="position:relative">${i}${k==='me'&&expDue().length?'<i style="position:absolute;top:-2px;right:-8px;width:9px;height:9px;border-radius:50%;background:var(--chili)"></i>':''}</span>${t(l)}</button>`).join('');
 }
 function header(night){
   const nm=night&&S.tab==='home';
@@ -2507,7 +2537,7 @@ function viewHome(){
     ${useFood?`<div class="flex flex-wrap gap-2 mt-2">${['sweet','drink'].map(x=>chip('itemCat',x)).join('')}${fl?['halal','veg'].map(x=>chip('dietary',x)).join('')+['set'].map(x=>chip('category',x)).join(''):''}</div>`:''}
   </div>
   <div class="flex items-center justify-between gap-2 mt-4 mb-2"><div class="display text-lg">${fl?t('boxesNear'):t('allShopsTitle')} <span class="muted text-sm" id="shopcnt">(${list.length})</span></div>
-    ${fl?`<button class="text-sm font-semibold underline text-right" style="color:var(--chili)" onclick="rewardPoints()">${t('watchAd')}</button>`:''}</div>
+    ${fl&&(!PROD||Ads.native())?`<button class="text-sm font-semibold underline text-right" style="color:var(--chili)" onclick="rewardPoints()">${t('watchAd')}</button>`:''}</div>
   <div id="shoplist">${shopListHtml(list)}</div>
   ${fl?'':`<div class="card p-4 mt-3 text-sm muted">${t('waitHint')}</div>`}
   ${partnerCard()}
@@ -2625,18 +2655,24 @@ async function emailVerify(){
     const f=window._after; window._after=null; if(f) f();
   }catch(x){ toast(t('emailWrong')); }
 }
+async function oauthGo(cl,provider,extra,link){                          // web: normal redirect. App: Google blocks WebViews, so use the system browser and come back by deep link
+  const o={provider,options:Object.assign({redirectTo:NATIVE?APP_SCHEME:location.origin+location.pathname},extra||{})};
+  if(NATIVE) o.options.skipBrowserRedirect=true;
+  const r=link?await cl.auth.linkIdentity(o):await cl.auth.signInWithOAuth(o);
+  if(NATIVE&&r&&r.data&&r.data.url&&!r.error){ await window.Capacitor.Plugins.Browser.open({url:r.data.url}); }
+  return r;
+}
 async function lineLogin(){
   const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
   try{
-    const r=await cl.auth.signInWithOAuth({provider:'custom:line',options:{redirectTo:location.origin+location.pathname,scopes:'profile openid'}});
+    const r=await oauthGo(cl,'custom:line',{scopes:'profile openid'},false);
     if(r&&r.error) toast(t('loginFail'));
   }catch(e){ toast(t('loginFail')); }
 }
 async function googleLogin(){
   const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
   try{
-    const o={provider:'google',options:{redirectTo:location.origin+location.pathname}};
-    const r=(Cloud.sbUser&&Cloud.sbUser.is_anonymous)?await cl.auth.linkIdentity(o):await cl.auth.signInWithOAuth(o);   // linking keeps the same user id (orders/shops stay)
+    const r=await oauthGo(cl,'google',{},!!(Cloud.sbUser&&Cloud.sbUser.is_anonymous));   // linking keeps the same user id (orders/shops stay)
     if(r&&r.error) toast(t('loginFail'));
   }catch(e){ toast(t('loginFail')); }
 }
@@ -3193,7 +3229,66 @@ const BADGES=[
   {k:'neighbor',e:'🤝',n:'b3n',d:'b3d',ok:()=>S.fridgeActs>=3},
 ];
 function checkBadges(){ BADGES.forEach(b=>{ if(b.ok()&&!S.badges[b.k]){ S.badges[b.k]=true; S.points+=PROD?0:30; setTimeout(()=>toast(t('badgeToast',{n:t(b.n)})),500);} }); }
+/* ---------- Personal expiry reminders: private to this device, survives logout ---------- */
+const EXPKEY='cde-expiry-v1', EXP_EMO=['🥛','💊','🧴','🧾'];
+const EXP=(()=>{ try{ const j=JSON.parse(localStorage.getItem(EXPKEY)||'null'); if(j&&Array.isArray(j.items)){ j.seq=+j.seq||0; return j; } }catch(e){} return {items:[],seq:0}; })();
+const expU=s=>Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10));
+const expDays=d=>Math.round((expU(d)-expU(bkkISO()))/864e5);
+const expSorted=()=>EXP.items.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+const expDue=()=>EXP.items.filter(x=>expDays(x.date)<=x.lead);
+function expSave(){ try{ localStorage.setItem(EXPKEY,JSON.stringify(EXP)); }catch(e){} expSchedule(); }
+async function expSchedule(){                                               // Android only: local notifications at 09:00 (no server involved)
+  const N=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications; if(!NATIVE||!N) return;
+  try{
+    let p=await N.checkPermissions();
+    if(p.display!=='granted'){ if(!EXP.items.length) return; p=await N.requestPermissions(); if(p.display!=='granted') return; }
+    const pend=await N.getPending(); if(pend&&pend.notifications&&pend.notifications.length) await N.cancel({notifications:pend.notifications});
+    const list=[], now=Date.now();
+    EXP.items.forEach(x=>{ const [y,m,d]=x.date.split('-').map(Number);
+      [[x.lead,0],[0,1]].forEach(([k,j])=>{ const at=new Date(y,m-1,d-k,9,0,0); if(at.getTime()>now) list.push({id:x.id*2+j,title:'CountDown Eats',body:j?t('expNotifToday',{name:x.name}):t('expNotifSoon',{name:x.name,n:x.lead}),schedule:{at}}); }); });
+    if(list.length) await N.schedule({notifications:list});
+  }catch(e){ console.warn(e); }
+}
+function expStatus(x){ const d=expDays(x.date); return d<0?[t('expOver',{n:-d}),'var(--chili)']:d===0?[t('expToday'),'var(--chili)']:[t('expLeft',{n:d}),d<=x.lead?'var(--lantern)':'var(--jade)']; }
+function expRow(x){ const [st,col]=expStatus(x);
+  return `<div class="card p-3 flex items-center gap-3"><div class="text-3xl">${EXP_EMO[x.cat]||'🧾'}</div><div class="flex-1 min-w-0"><div class="font-bold break-words">${esc(x.name)}</div><div class="text-xs muted">${esc(dateStr(x.date))} · ${t('expLead1',{n:x.lead})}</div></div><div class="text-sm font-bold text-right shrink-0" style="color:${col}">${st}</div><button class="chip" aria-label="${t('expDel')}" onclick="expDel(${x.id})">🗑</button></div>`; }
+function expCard(){
+  const due=expDue(), top=expSorted().slice(0,3);
+  return `<div class="display text-lg mt-5 mb-1">${t('expMy')}</div><div class="text-xs muted mb-2">${t('expSub')}</div>
+  <div class="space-y-2">${top.length?top.map(expRow).join(''):`<div class="card p-4 text-sm muted">${t('expEmpty')}</div>`}</div>
+  ${due.length?`<div class="text-sm font-semibold mt-2" style="color:var(--chili)">${t('expDueN',{n:due.length})}</div>`:''}
+  <button class="btn w-full mt-2" onclick="openExp()">${t('expManage')}${EXP.items.length>3?` (${EXP.items.length})`:''}</button>`;
+}
+function openExp(){
+  const l=[1,3,7,14,30];
+  sheet(`<div class="display text-xl mb-3">${t('expMy')}</div>
+    <label class="text-sm font-semibold" for="ex-n">${t('expName')}</label><input id="ex-n" maxlength="60" placeholder="${t('expNamePh')}" class="mb-2">
+    <label class="text-sm font-semibold" for="ex-d">${t('expDate')}</label><input id="ex-d" type="date" class="mb-2">
+    <label class="text-sm font-semibold" for="ex-c">${t('expCat')}</label><select id="ex-c" class="mb-2">${EXP_EMO.map((e,i)=>`<option value="${i}">${t('expC'+i)}</option>`).join('')}</select>
+    <label class="text-sm font-semibold" for="ex-l">${t('expLead')}</label><select id="ex-l" class="mb-3">${l.map(n=>`<option value="${n}" ${n===3?'selected':''}>${t('expLeadOpt',{n})}</option>`).join('')}</select>
+    <button class="btn w-full" onclick="expAdd()">${t('expAddBtn')}</button>
+    ${NATIVE?'':`<div class="text-xs muted mt-2">${t('expAppNote')}</div>`}
+    <div class="space-y-2 mt-4" style="max-height:38vh;overflow:auto">${EXP.items.length?expSorted().map(expRow).join(''):`<div class="text-sm muted">${t('expEmpty')}</div>`}</div>
+    <button class="btn w-full mt-3" style="background:var(--soft);color:var(--ink)" onclick="closeSheet()">${t('close')}</button>`);
+}
+function expAdd(){
+  const name=$('#ex-n').value.trim().slice(0,60), date=$('#ex-d').value, cat=Math.min(3,Math.max(0,+$('#ex-c').value||0)), lead=+$('#ex-l').value||3;
+  if(!name) return toast(t('expNeedName'));
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)) return toast(t('expNeedDate'));
+  if(EXP.items.length>=100) return toast(t('expFull'));
+  EXP.items.push({id:++EXP.seq,name,date,cat,lead}); expSave(); openExp(); render(); toast(t('expAdded'));
+}
+function expDel(id){ EXP.items=EXP.items.filter(x=>x.id!==id); expSave(); openExp(); render(); }
+function expBoot(){ try{ const n=expDue().length, d=bkkISO(); if(n&&localStorage.getItem('cde-exp-seen')!==d){ localStorage.setItem('cde-exp-seen',d); toast(t('expBoot',{n})); } }catch(e){} }
 function rewardPoints(){
+  if(PROD){                                                                  // real app: the server owns the points and the daily cap
+    if(!Ads.native()) return toast(t('adAppOnly'));
+    if(!Srv.on) return;
+    return needVerify(()=>Ads.rewarded(async()=>{
+      try{ const r=await Srv.rpc('ad_reward'); S.points=+r.points||0; save(); render(); toast(t('adReward',{n:r.n})); }
+      catch(e){ if(e&&e.code==='RATE') toast(t('adLimit')); else Srv.err(e); }
+    }));
+  }
   const d=bkkISO(); if(S.adDay.d!==d) S.adDay={d,n:0};
   if(S.adDay.n>=5) return toast(t('adLimit'));
   Ads.rewarded(()=>{ S.adDay.n++; S.points+=20; save(); render(); toast(t('adReward',{n:S.adDay.n})); });
@@ -3208,7 +3303,8 @@ function viewMe(){
     <div class="bar my-2" style="background:#ffffff22"><i style="width:${pct}%;background:var(--lantern)"></i></div>
     <div class="flex justify-between text-sm"><span>${t('savedBaht',{n:Math.round(S.baht)})}</span><span>${t('goal',{n:goal})}</span></div>${S.itemsSaved>0?`<div class="text-sm mt-1 opacity-80">${t('rescuedItems',{n:S.itemsSaved})}</div>`:''}
   </div>
-  ${PROD?'':`<button class="btn w-full mt-3" onclick="rewardPoints()">${t('watchAdBtn')}</button>`}
+  ${expCard()}
+  ${(!PROD||Ads.native())?`<button class="btn w-full mt-3" onclick="rewardPoints()">${t('watchAdBtn')}</button>`:''}
   <div class="display text-lg mt-5 mb-2">${t('badgesTitle')}</div>
   <div class="space-y-2">${BADGES.map(b=>{const on=S.badges[b.k];return `<div class="card p-3 flex items-center gap-3" style="opacity:${on?1:.55}"><div class="text-3xl">${on?b.e:'🔒'}</div><div><div class="font-bold">${t(b.n)}</div><div class="text-sm muted">${t(b.d)}</div></div></div>`}).join('')}</div>
   ${PROD?`<div class="display text-lg mt-5 mb-2">${t('redeemTitle')}</div>
@@ -3327,8 +3423,28 @@ function sanitizeState(){
   cleanOrderFn=cleanOrder; S.orders=arr(S.orders).map(cleanOrder).filter(Boolean).slice(0,200);
 }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const lb=document.getElementById('lb'); if(lb) lb.remove(); else closeSheet(); } });
-initData(); Ads.init(); render(); if(PROD) Srv.init(); else Cloud.init(); openSharedShop();
+if(NATIVE){ try{                                                           // Android: finish a Google/LINE login that came back through com.countdowneats.app://auth
+  window.Capacitor.Plugins.App.addListener('appUrlOpen',async ev=>{
+    const u=String((ev&&ev.url)||''); if(u.indexOf(APP_SCHEME)!==0) return;
+    try{ await window.Capacitor.Plugins.Browser.close(); }catch(e){}
+    const p=new URLSearchParams((u.split('#')[1]||'')+'&'+(u.split('?')[1]||'').split('#')[0]);
+    const at=p.get('access_token'), rt=p.get('refresh_token');
+    if(at&&rt){
+      try{ const cl=Cloud.sb||window.supabase.createClient(window.CDE_SUPABASE.url,window.CDE_SUPABASE.key,{auth:{persistSession:true,autoRefreshToken:true}}); const r=await cl.auth.setSession({access_token:at,refresh_token:rt}); if(r&&r.error) throw r.error; }
+      catch(e){ toast(t('loginFail')); return; }
+      try{ sessionStorage.removeItem('cde-relogin'); }catch(e){}
+      location.reload(); return;
+    }
+    const ed=decodeURIComponent((p.get('error_description')||'').replace(/\+/g,' '));
+    if(/already/i.test(ed)&&Cloud.sb){                                      // this Google account already belongs to an older user: sign in as that user
+      let tried=false; try{ tried=sessionStorage.getItem('cde-relogin')==='1'; sessionStorage.setItem('cde-relogin','1'); }catch(e){}
+      if(!tried){ toast(t('reloginExisting')); oauthGo(Cloud.sb,'google',{},false); return; }
+    }
+    toast(t('loginFail')+(ed?' — '+ed.slice(0,120):''));
+  });
+}catch(e){} }
+initData(); Ads.init(); render(); setTimeout(()=>{ expBoot(); expSchedule(); },1500); if(PROD) Srv.init(); else Cloud.init(); openSharedShop();
 </script>
-<script>if('serviceWorker' in navigator&&location.protocol==='https:') addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
+<script>if(!NATIVE&&'serviceWorker' in navigator&&location.protocol==='https:') addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>
 </html>
