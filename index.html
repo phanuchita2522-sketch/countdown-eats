@@ -441,6 +441,7 @@ const T={
   resetSub:['ออเดอร์ แต้ม และการยืนยันตัวตนทั้งหมดจะหายไป','All orders, points and verification will be lost.'],
   cancel:['ยกเลิก','Cancel'],
   clearBtn:['ล้างข้อมูล','Clear'],
+  carEmpty:['ยังไม่มีรายการในรัศมี {n} กม. ลองขยายรัศมี หรือกลับมาดูใหม่เมื่อร้านลงสินค้า','Nothing within {n} km yet. Try a wider radius or check back when shops list items.'],
   expMy:['⏰ เตือนวันหมดอายุของฉัน','⏰ My expiry reminders'],
   expSub:['เก็บในเครื่องนี้เท่านั้น ตั้งวันและจำนวนวันที่จะให้เตือนเองได้','Stored on this device only. Set the date and how early to be reminded.'],
   expManage:['เพิ่ม / จัดการ','Add / manage'],
@@ -2493,18 +2494,18 @@ function carBase(){
 function carRows(){
   const list=carBase(), now=Date.now();
   const ok=list.filter(s=>!suspended(s)&&!(isTimed(s)&&s.endAt-now<=0)&&leftOf(s)>0);
-  if(ok.length<1) return [];
   const best=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.max(a,pct(o.worth,o.price)),0);
   const low=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.min(a,o.price),1e9);
   const rows=[['carNear',ok.slice().sort(byDistance)],['carDeal',ok.filter(s=>best(s)>0).sort((a,b)=>best(b)-best(a))]];
   if(S.tab==='retail') rows.push(['carCheap',ok.slice().sort((a,b)=>low(a)-low(b))]);
   else if(flashOn()) rows.push(['carSoon',ok.filter(s=>isTimed(s)).sort((a,b)=>a.endAt-b.endAt)]);
-  return rows.filter(r=>r[1].length);
+  return rows;                                                              // rows are always listed; an empty one explains itself
 }
 function carouselInner(list){
   if(normQ(SQ)) return '';
-  return carRows(list).map(r=>`<div class="mt-4"><div class="flex items-center justify-between mb-2"><div class="display text-lg">${t(r[0])}</div><button class="text-sm font-semibold" style="color:var(--jade)" onclick="seeAll('${r[0]}')">${t('carAll')}</button></div>
-    <div style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px">${r[1].slice(0,8).map(carCard).join('')}</div></div>`).join('');
+  return carRows(list).map(r=>r[1].length?`<div class="mt-4"><div class="flex items-center justify-between mb-2"><div class="display text-lg">${t(r[0])}</div><button class="text-sm font-semibold" style="color:var(--jade)" onclick="seeAll('${r[0]}')">${t('carAll')}</button></div>
+    <div style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px">${r[1].slice(0,8).map(carCard).join('')}</div></div>`
+    :`<div class="mt-4"><div class="display text-lg mb-2">${t(r[0])}</div><div class="card p-4 text-sm muted">${t('carEmpty',{n:S.radius})}</div></div>`).join('');
 }
 function seeAll(k){ SEE={tab:S.tab,k}; render(); window.scrollTo(0,0); }
 function seeBack(){ SEE=null; render(); window.scrollTo(0,0); }
