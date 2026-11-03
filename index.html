@@ -2455,8 +2455,13 @@ function carCard(s){
     ${cheap?`<div style="position:absolute;right:10px;top:10px;background:rgba(0,0,0,.72);border-radius:12px;padding:3px 10px;font-weight:700">${esc(t('fromPrice',{n:cheap.price}))}${cheap.worth>cheap.price?' <span style="font-size:11px;color:var(--lantern)">-'+pct(cheap.worth,cheap.price)+'%</span>':''}</div>`:''}
   </button>`;
 }
-function carRows(list){
-  const now=Date.now();
+/* The two top rows are NOT affected by the category / dietary chips: they always list every shop in the radius (night market tab: normal shops, stores tab: branches). */
+function carBase(){
+  const base=S.tab==='retail'?S.shops.filter(s=>s.type==='chain'&&liveOffers(s).length>0&&withinRadius(s)):S.shops.filter(s=>s.type!=='chain'&&liveOffers(s).length>0&&withinRadius(s));
+  return base.sort(byDistance);
+}
+function carRows(){
+  const list=carBase(), now=Date.now();
   const ok=list.filter(s=>!suspended(s)&&!(isTimed(s)&&s.endAt-now<=0)&&leftOf(s)>0);
   if(ok.length<1) return [];
   const best=s=>liveOffers(s).filter(o=>o.left>0).reduce((a,o)=>Math.max(a,pct(o.worth,o.price)),0);
@@ -2474,7 +2479,7 @@ function carouselInner(list){
 function seeAll(k){ SEE={tab:S.tab,k}; render(); window.scrollTo(0,0); }
 function seeBack(){ SEE=null; render(); window.scrollTo(0,0); }
 function viewSeeAll(){                                                    // one row of the carousel as a full page, same rules as the row (no 8-shop cap)
-  const row=carRows(filteredShops()).find(r=>r[0]===SEE.k);
+  const row=carRows().find(r=>r[0]===SEE.k);
   if(!row){ SEE=null; return ''; }
   return `<button class="chip mb-3" onclick="seeBack()">← ${t('back')}</button>
     <div class="display text-xl">${t(SEE.k)}</div><div class="text-xs muted mb-3">${t(S.tab==='retail'?'navRetail':'navHome')} · ${t('radiusLabel')} ${S.radius} ${t('km')} · <span id="seecnt">${row[1].length}</span></div>
