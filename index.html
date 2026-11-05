@@ -167,6 +167,7 @@ const T={
   newShopBadge:['🆕 ร้านใหม่ · จำกัด ฿{n}/ออเดอร์','🆕 New shop · max ฿{n}/order'],
   doneCount:['ขายสำเร็จ {n} ราย (30 วัน)','{n} buyers served (30 days)'],
   chainUnverified:['ยังไม่ได้ยืนยันกับแบรนด์','Not verified with the brand'],
+  chainAdminOk:['แอดมินตรวจสอบแล้ว','Reviewed by admin'],
   payChangedWarn:['⚠️ ร้านนี้เพิ่งตั้ง/เปลี่ยนบัญชีรับเงิน ตรวจชื่อผู้รับให้ตรงก่อนโอนทุกครั้ง','⚠️ This shop recently set or changed its payment account. Double-check the recipient name before you pay.'],
   reportOrder:['รายงานปัญหา','Report a problem'],
   reported:['ส่งรายงานแล้ว','Report sent'],
@@ -1290,7 +1291,7 @@ const Srv={
     raw.items=(j.items||[]).map(m=>({...m,img:(m.img&&safeImg(m.img))||PH_IMG}));
     raw.pay=mine?j.pay:null;
     const sh=cleanShopFn(raw); if(!sh) return null;
-    sh.remote=!mine; sh.owner=mine?Cloud.uid:'srv'; sh.hasPay=!!j.hasPay; sh.doneN=+j.doneN||0; sh.susp=!!j.susp; sh.review=String(j.review||'ok'); sh.reviewNote=String(j.reviewNote||'').slice(0,200);
+    sh.remote=!mine; sh.owner=mine?Cloud.uid:'srv'; sh.hasPay=!!j.hasPay; sh.doneN=+j.doneN||0; sh.susp=!!j.susp; sh.brandOk=!!j.brandOk; sh.review=String(j.review||'ok'); sh.reviewNote=String(j.reviewNote||'').slice(0,200);
     [['item',sh.items],['bundle',sh.bundles],['box',sh.sets]].forEach(([k,L])=>L.forEach(r=>{ const key=sh.id+k+r.id; if(r.left<=0){ r.soldAt=this.sold[key]||(this.sold[key]=Date.now()); } else { r.soldAt=0; delete this.sold[key]; } }));
     return sh;
   },
@@ -2644,7 +2645,7 @@ function viewHome(){
 }
 function trustBadges(s){
   const b=[], pill=(x,c)=>`<span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--soft);${c?'color:'+c:''}">${x}</span>`;
-  if(s.type==='chain') b.push(pill(esc(t('chainUnverified')),'var(--chili)'));
+  if(s.type==='chain') b.push(s.brandOk?pill('✓ '+esc(t('chainAdminOk')),'var(--ok,#1a9e6b)'):pill(esc(t('chainUnverified')),'var(--chili)'));
   if((cloudShop(s)||PROD)&&!s.mine){ const d=PROD?(s.doneN||0):(Cloud.done[s.id]||0); if(d<NEW_DONE) b.push(pill(esc(t('newShopBadge',{n:NEW_CAP})),'var(--chili)')); if(d>0) b.push(pill(esc(t('doneCount',{n:d})))); }
   return b.join('');
 }
