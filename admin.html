@@ -31,6 +31,11 @@ label{display:block;font-size:14px;font-weight:600;margin:8px 0 3px}
 <div id="gate" class="card" style="margin-top:14px">กำลังตรวจสอบสิทธิ์…</div>
 
 <div id="app" class="hide">
+  <h2>ตรวจร้านห้าง/มินิมาร์ท และรายงานร้านปลอม <span id="rcount" class="tag">0</span></h2>
+  <div class="muted" style="margin-bottom:8px">ร้านประเภทห้าง/มินิมาร์ทจะไม่แสดงต่อลูกค้าจนกว่าจะกด "อนุมัติ" · ร้านที่ถูกรายงานโดยผู้ใช้ 2 ราย หรือเจ้าของสิทธิ์ จะถูกซ่อนมาอยู่ที่นี่อัตโนมัติ · "อนุมัติ" = ตรวจแล้วว่าเป็นสาขาจริง (ระบบจะไม่ซ่อนอัตโนมัติจากรายงานอีก) · อย่าส่งต่ออีเมล/เบอร์ของผู้แจ้งให้ร้านที่ถูกแจ้ง</div>
+  <div id="review"></div>
+  <details style="margin:6px 0 4px"><summary class="muted" style="cursor:pointer">ร้านห้าง/มินิมาร์ทที่ตรวจแล้ว (ถอนการอนุมัติได้)</summary><div id="chains" style="margin-top:8px"></div></details>
+
   <h2>รออนุมัติเติมเครดิต <span id="pcount" class="tag">0</span></h2>
   <div class="muted" style="margin-bottom:8px">ตรวจในแอปธนาคารของคุณว่ามีเงินเข้า <b>ตรงยอดรวมสตางค์</b> ตามรายการ แล้วจึงกดอนุมัติ ยอดสตางค์ใช้จับคู่เท่านั้น เครดิตที่เติมคิดเป็นบาทเต็ม</div>
   <div id="pending"></div>
@@ -87,7 +92,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 function msg(t){ const m=$('#msg'); m.textContent=t; m.style.display='block'; clearTimeout(msg.t); msg.t=setTimeout(()=>m.style.display='none',3200); }
 const fmtT=ts=>new Date(+ts).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'});
 const baht=n=>'฿'+(+n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-let sb=null, DATA=null;
+let sb=null, DATA=null, REV=null;
 async function rpc(fn,args){
   const r=await sb.rpc(fn,args||{});
   if(r.error){ const m=/CDE_ERR:([A-Z_]+)/.exec(r.error.message||''); const e=new Error(m?m[1]:(r.error.message||'ERR')); e.code=m?m[1]:'ERR'; throw e; }
@@ -104,7 +109,7 @@ async function init(){
     await load(); g.classList.add('hide'); $('#app').classList.remove('hide');
   }catch(e){ g.textContent=(e.code==='AUTH')?'บัญชีนี้ไม่ใช่ผู้ดูแล (ดูขั้นตอนตั้งแอดมินใน ADMIN-TH.md)':errText(e); }
 }
-async function load(){ DATA=await rpc('admin_overview'); draw(); }
+async function load(){ DATA=await rpc('admin_overview'); try{ REV=await rpc('admin_review_queue'); }catch(e){ REV=null; } draw(); drawReview(); }
 function draw(){
   const d=DATA, c=d.cfg||{};
   $('#pcount').textContent=d.pending.length;
@@ -116,6 +121,31 @@ function draw(){
   $('#wallets').innerHTML=d.wallets.length?d.wallets.map(w=>`<div class="card row"><span>${esc(w.who)}</span><b style="color:${w.balance<=0?'var(--chili)':'inherit'}">${baht(w.balance)}</b></div>`).join(''):'<div class="card muted">ยังไม่มีร้านที่เติมเครดิต</div>';
   const st={approved:'อนุมัติ',rejected:'ปฏิเสธ',expired:'หมดอายุ'};
   $('#recent').innerHTML=d.recent.length?d.recent.map(r=>`<div class="card row"><span>${esc(r.who)} <span class="muted">${fmtT(r.ts)}</span></span><span>${baht(r.amount)} <span class="tag">${st[r.status]||r.status}</span></span></div>`).join(''):'<div class="card muted">ยังไม่มีประวัติ</div>';
+}
+
+const RSN={brand:'แอบอ้างแบรนด์',copyright:'ละเมิดลิขสิทธิ์/เครื่องหมายการค้า',fake:'ร้านปลอม/หลอกลวง',other:'อื่นๆ'};
+const CHN={bigc:'Big C',makro:'Makro',lotus:'Lotus\'s',central:'Central',themall:'The Mall',seven:'7-Eleven',cj:'CJ',other:'อื่นๆ'};
+function mapLink(r){ return (r.lat!=null&&r.lng!=null)?`<a href="https://www.google.com/maps?q=${encodeURIComponent(r.lat+','+r.lng)}" target="_blank" rel="noopener">แผนที่</a>`:'<span class="muted">ไม่มีพิกัด</span>'; }
+function drawReview(){
+  if(!REV){ $('#review').innerHTML='<div class="card muted">ยังไม่ได้รัน supabase-chain-guard-patch.sql ใน Supabase</div>'; $('#rcount').textContent='-'; $('#chains').innerHTML=''; return; }
+  const q=REV.queue||[]; $('#rcount').textContent=q.length;
+  $('#review').innerHTML=q.length?q.map(r=>`<div class="card">
+    <div class="row"><div style="min-width:0"><b>${esc(r.name)}</b> <span class="tag">${r.review==='pending'?'รอตรวจ':esc(r.review)}</span> <span class="tag">${esc(r.type==='chain'?('ห้าง/มินิมาร์ท · '+(CHN[r.chain]||r.chain)):r.type)}</span>
+      <div class="muted">เจ้าของ: ${esc(r.who)} · สร้าง ${fmtT(r.created)} · ${r.nItems} รายการ · ${mapLink(r)}</div>
+      <div class="muted">ที่อยู่: ${esc(r.addr||'-')}</div></div></div>
+    ${r.proof?`<div style="margin-top:6px"><b>ข้อมูลยืนยันจากเจ้าของร้าน:</b><div class="muted" style="white-space:pre-wrap">${esc(r.proof)}</div></div>`:''}
+    ${r.note?`<div class="muted" style="margin-top:4px">หมายเหตุปัจจุบัน: ${esc(r.note)}</div>`:''}
+    ${(r.reports||[]).length?`<div style="margin-top:6px"><b>รายงาน (${r.reports.length}):</b>${r.reports.map(x=>`<div class="muted" style="border-left:3px solid var(--line);padding-left:8px;margin-top:4px"><span class="tag">${esc(RSN[x.reason]||x.reason)}</span>${x.claimant?' <span class="tag" style="border-color:var(--chili);color:var(--chili)">อ้างเป็นเจ้าของสิทธิ์</span>':''} ${fmtT(x.ts)}<div style="white-space:pre-wrap">${esc(x.detail)}</div>${x.contact?`<div>ติดต่อกลับ: ${esc(x.contact)}</div>`:''}</div>`).join('')}</div>`:''}
+    <input id="rn${r.id}" maxlength="200" placeholder="ข้อความถึงเจ้าของร้าน (แสดงให้เจ้าของเห็น เช่น เหตุผลที่ไม่ผ่าน)" autocomplete="off" style="margin-top:8px">
+    <div class="row" style="margin-top:8px;justify-content:flex-end"><button class="alt" onclick="reviewSet(${r.id},'rejected')">ไม่ผ่าน/ลบออกจากการแสดง</button><button class="ok" onclick="reviewSet(${r.id},'ok')">อนุมัติ (สาขาจริง)</button></div></div>`).join(''):'<div class="card muted">ไม่มีร้านรอตรวจ</div>';
+  const c=REV.chains||[];
+  $('#chains').innerHTML=c.length?c.map(r=>`<div class="card row"><span>${esc(r.name)} <span class="muted">${esc(r.who)}</span> <span class="tag">${r.review==='ok'?(r.brandOk?'อนุมัติแล้ว':'ปกติ (ร้านเก่า ยังไม่ได้ตรวจ)'):esc(r.review)}</span></span>${r.review==='ok'?`<button class="alt" onclick="reviewSet(${r.id},'pending')">ส่งกลับไปตรวจ</button>`:`<button class="ok" onclick="reviewSet(${r.id},'ok')">อนุมัติ</button>`}</div>`).join(''):'<div class="card muted">ยังไม่มี</div>';
+}
+async function reviewSet(id,status){
+  const el=$('#rn'+id), note=el?el.value.trim():'';
+  if(status==='rejected'&&!note){ if(!confirm('ยังไม่ได้เขียนข้อความถึงเจ้าของร้าน ต้องการปฏิเสธโดยไม่ระบุเหตุผล?')) return; }
+  if(!confirm(status==='ok'?'ยืนยันว่าตรวจแล้วเป็นสาขาจริง และให้แสดงร้านนี้ต่อลูกค้า?':status==='rejected'?'ปฏิเสธและซ่อนร้านนี้?':'ซ่อนร้านนี้และส่งกลับไปตรวจใหม่?')) return;
+  try{ await rpc('admin_review_set',{p_shop:id,p_status:status,p_note:note||null}); msg('บันทึกแล้ว'); await load(); }catch(e){ msg(errText(e)); }
 }
 async function decide(id,ok,amount){
   if(!confirm(ok?`ยืนยันว่าเงิน ${baht(amount)} เข้าบัญชีแล้ว และอนุมัติเติมเครดิต?`:'ปฏิเสธคำขอนี้?')) return;
