@@ -654,6 +654,10 @@ const T={
   chain_seven:['เซเว่น อีเลฟเว่น','7-Eleven'],
   chain_cj:['ซีเจ','CJ'],
   chain_other:['ห้าง/ร้านอื่น ๆ','Other store'],
+  regOtherType:['ไม่ใช่ห้าง/สะดวกซื้อ/มินิมาร์ท? เลือกประเภทร้านอื่น','Not a mall/convenience/mini-mart? Pick another store type'],
+  chain_mall:['ห้าง','Department store / mall'],
+  chain_conv:['ร้านสะดวกซื้อ','Convenience store'],
+  chain_mini:['มินิมาร์ท','Mini-mart'],
   retailTitle:['ห้าง & ร้านสะดวกซื้อ','Supermarkets & convenience stores'],
   retailSub:['สินค้าใกล้หมดอายุ/ลดราคาจากสาขาใกล้คุณ จองในแอปแล้วไปจ่ายและรับของที่สาขา','Near-expiry and marked-down goods from branches near you. Reserve in the app, pay and collect at the branch.'],
   chainNote:['แอปนี้ไม่ได้เป็นพันธมิตรหรือได้รับการรับรองจากแบรนด์ที่แสดงชื่อ รายการมาจากสาขา/ผู้ลงทะเบียนเอง ตรวจสอบราคาและวันหมดอายุที่หน้าร้านก่อนจ่ายเสมอ','This app is not affiliated with or endorsed by the brands named. Listings come from the branches/people who registered them. Always check price and expiry date in store before paying.'],
@@ -1286,7 +1290,7 @@ const Srv={
     raw.items=(j.items||[]).map(m=>({...m,img:(m.img&&safeImg(m.img))||PH_IMG}));
     raw.pay=mine?j.pay:null;
     const sh=cleanShopFn(raw); if(!sh) return null;
-    sh.remote=!mine; sh.owner=mine?Cloud.uid:'srv'; sh.hasPay=!!j.hasPay; sh.doneN=+j.doneN||0; sh.susp=!!j.susp;
+    sh.remote=!mine; sh.owner=mine?Cloud.uid:'srv'; sh.hasPay=!!j.hasPay; sh.doneN=+j.doneN||0; sh.susp=!!j.susp; sh.review=String(j.review||'ok'); sh.reviewNote=String(j.reviewNote||'').slice(0,200);
     [['item',sh.items],['bundle',sh.bundles],['box',sh.sets]].forEach(([k,L])=>L.forEach(r=>{ const key=sh.id+k+r.id; if(r.left<=0){ r.soldAt=this.sold[key]||(this.sold[key]=Date.now()); } else { r.soldAt=0; delete this.sold[key]; } }));
     return sh;
   },
@@ -1310,7 +1314,7 @@ const Srv={
       let mineChanged=false;
       if((full||this.mineList.length||S.user.verified)&&!this.dirty&&!this.pushing){
         const m=await this.rpc('my_shops'), list=(m||[]).map(j=>this.conv(j,true)).filter(Boolean);
-        const sg=JSON.stringify(list.map(x=>[x.id,this.sig(x),x.items.map(i=>i.left)]));
+        const sg=JSON.stringify(list.map(x=>[x.id,this.sig(x),x.items.map(i=>i.left),x.review,x.reviewNote]));
         if(sg!==this.mineSig){ this.mineSig=sg; mineChanged=true; }
         this.mineList=list; list.forEach(x=>{ this.hash[x.id]=this.sig(x); });
       }
@@ -1374,7 +1378,7 @@ const Srv={
   async saveOne(sh,isNew){
     for(const m of sh.items){ if(/^data:image\/jpeg/.test(m.img||'')){ const u=await this.upload(m.img); if(!u) throw {code:'NET'}; m.img=u; } }
     const h=this.sig(sh); if(!isNew&&this.hash[sh.id]===h) return sh.id;
-    const id=await this.rpc('save_shop',{p_id:isNew?null:sh.id,p_doc:this.docOf(sh),p_pay:this.payOf(sh)});
+    const id=await this.rpc('save_shop',{p_id:isNew?null:sh.id,p_doc:this.docOf(sh),p_pay:this.payOf(sh),p_decl:!!sh._decl,p_proof:sh._proof||null});
     this.hash[id]=h; this.gc(); return id;
   },
   async deleteShop(id){
@@ -1597,11 +1601,12 @@ const CATS=['savory','sweet','drink','beauty','supp','apparel','shoes','other'];
 const GROUPS=['food','beauty','apparel','shoes','other'];           // supplements are listed under 'other'
 const grpOf=c=>FOOD_CATS.includes(c)?'food':(c==='supp'?'other':c);
 const SHOP_TYPES=['eatery','market','cafe','beauty','health','fashion','general','chain'];
-const CHAINS=['bigc','makro','lotus','central','themall','seven','cj','other'];
+const KINDS=['mall','conv','mini'];                                        // store kinds chosen when registering a chain-type shop
+const CHAINS=['bigc','makro','lotus','central','themall','seven','cj','other',...KINDS];
 const CHAIN_KW={bigc:'big c bigc บิ๊กซี',makro:'makro แม็คโคร',lotus:'lotus lotus\'s โลตัส',central:'central เซ็นทรัล',themall:'the mall themall เดอะมอลล์',seven:'7-eleven 7eleven seven เซเว่น 7-11',cj:'cj ซีเจ',other:''};
 const chainName=k=>t('chain_'+(CHAINS.includes(k)?k:'other'));
-const typeLabel=s=>(s.type==='chain'&&s.chain)?chainName(s.chain)+' · '+t('type_chain'):t('type_'+s.type);
-const shopTitle=s=>(s.type==='chain'&&s.chain&&s.chain!=='other')?chainName(s.chain)+' '+loc(s.name):loc(s.name);
+const typeLabel=s=>(s.type==='chain'&&KINDS.includes(s.chain))?chainName(s.chain):(s.type==='chain'&&s.chain)?chainName(s.chain)+' · '+t('type_chain'):t('type_'+s.type);
+const shopTitle=s=>(s.type==='chain'&&s.chain&&s.chain!=='other'&&!KINDS.includes(s.chain))?chainName(s.chain)+' '+loc(s.name):loc(s.name);
 const TIMED_TYPES=['eatery','market','cafe'];                       // food shops sell in the 18:00–21:00 window; others sell all day
 const TYPE_CATS={eatery:FOOD_CATS,market:FOOD_CATS,cafe:FOOD_CATS,beauty:['beauty'],health:['supp'],fashion:['apparel','shoes'],general:['beauty','supp','apparel','shoes','other'],chain:['savory','sweet','drink','beauty','supp','other']};
 const typeCats=ty=>TYPE_CATS[ty]||FOOD_CATS;
@@ -1756,11 +1761,11 @@ function openShop(id){
   const sold=`<div style="position:absolute;inset:0;border-radius:12px;background:rgba(20,10,30,.55);display:flex;align-items:center;justify-content:center"><span class="display text-white text-lg" style="transform:rotate(-8deg);border:2px solid #fff;padding:2px 10px;border-radius:8px">${t('soldOut')}</span></div>`;
   const anyFood=live.some(x=>isFoodCat(x.cat))||boxes.some(st=>CATS.some(k=>isFoodCat(k)&&(+st.mix[k]||0)>0));
   sheet(`<div class="flex items-center gap-3"><div class="text-4xl">${esc(sh.emoji)}</div><div class="min-w-0"><div class="display text-xl leading-tight">${esc(shopTitle(sh))}</div><div class="text-sm muted">${esc(typeLabel(sh))} · ${distLabel(sh)} · ${stars(sh.trust)}</div></div></div>
-    ${sh.mine?`<div class="text-xs mt-2" style="color:var(--chili)">${t('ownShop')}</div>`:''}
+    ${sh.mine?`<div class="text-xs mt-2" style="color:var(--chili)">${t('ownShop')}</div>`:''}${reviewBanner(sh)}
     ${sh.type==='chain'?`<div class="card p-3 mt-2 text-xs muted">${t('chainPayNote')}</div>`:''}
     ${sh.addr?`<div class="text-xs muted mt-2">📍 ${esc(sh.addr)}</div>`:''}
     <div class="flex flex-wrap gap-1 mt-2">${trustBadges(sh)}</div>
-    <div class="flex flex-wrap gap-2 mt-2">${mapLinks(sh)}<button class="chip" onclick="shareShop(${sh.id})">🔗 ${t('shareBtn')}</button></div>
+    <div class="flex flex-wrap gap-2 mt-2">${mapLinks(sh)}<button class="chip" onclick="shareShop(${sh.id})">🔗 ${t('shareBtn')}</button>${sh.mine?'':`<button class="chip" onclick="openReportShop(${sh.id})">🚩 ${t('rpShopBtn')}</button>`}</div>
     ${boxes.length?`<div class="display text-lg mt-4 mb-2">${t('sectionBoxes')}</div>${setTilesHtml(sh)}<div class="text-xs muted mt-2">${t('menuDisclaimer')}</div>`:''}
     ${bundles.length?`<div class="display text-lg mt-4 mb-2">${t('sectionSets')}</div><div class="space-y-2">${bundles.map(o=>`<div class="card p-3" style="opacity:${o.state==='soldout'?.6:1}"><div class="flex gap-1 mb-2">${o.items.map(x=>`<img src="${safeImg(x.img)}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:10px">`).join('')}</div>
         <div class="font-semibold break-words">${esc(o.bundle.name||t('setN',{n:o.n}))} ${o.items.some(x=>isFoodCat(x.cat))?day:''}</div><div class="text-xs muted break-words">${o.items.map(x=>esc(loc(x.name))).join(' + ')}</div>
@@ -1930,6 +1935,7 @@ function relistables(sh){
 }
 function openMenuMgr(sid,tab){
   if(PROD&&!S.user.verified) return needVerify(()=>openMenuMgr(sid,tab));            // not signed in: ask to log in instead of a dead end
+  if(PROD&&Srv.on&&!Srv.shopTerms) return Srv.needShopTerms(()=>openMenuMgr(sid,tab));   // Shop Terms must be accepted (and logged) before managing a shop
   const L=mgrShops(); if(!L.length) return toast(t('notEditable'));
   const sh=L.find(x=>x.id===sid)||L[0]; MG={sid:sh.id,tab:['items','sets','boxes','daily','pay','wallet'].includes(tab)?tab:'items'}; window._pending=null; MGON=true;
   WT=sh.type; WI=sh.items;
@@ -1960,7 +1966,7 @@ function openMenuMgr(sid,tab){
     WS=JSON.parse(JSON.stringify(sh.sets||[]));
     body=`<div class="text-xs muted mb-2">${t('todayBoxesSub')}</div><div id="sets">${setsEditorHtml()}</div><button class="btn w-full mt-3" onclick="saveSets(${sh.id})">${t('saveBoxes')}</button>`;
   }
-  sheet(`<div class="display text-xl mb-1">${t('manageMenu')}</div><div class="text-xs muted mb-3">${t('shopModeSub')}</div>
+  sheet(`<div class="display text-xl mb-1">${t('manageMenu')}</div><div class="text-xs muted mb-3">${t('shopModeSub')}</div>${reviewBanner(sh)}
     <label class="text-sm font-semibold" for="msh">${t('selectShop')}</label>
     <select id="msh" class="mb-3" onchange="openMenuMgr(+this.value)">${L.map(x=>`<option value="${x.id}" ${x.id===sh.id?'selected':''}>${esc(loc(x.name))}</option>`).join('')}</select>
     <div class="flex gap-2 mb-3"><button class="chip flex-1" onclick="closeSheet();openRegister()">➕ ${t('addShopBtn')}</button><button class="chip flex-1" style="color:var(--chili)" onclick="askDelShop(${sh.id})">🗑️ ${t('delShopBtn')}</button></div>
@@ -2246,7 +2252,7 @@ async function startScan(sid){
 
 /* ----- shop registration wizard (3 steps) ----- */
 let R=null;
-function openRegister(){ if(!S.user.verified) return needVerify(openRegister); R={step:1,name:'',addr:'',lat:null,lng:null,type:'eatery',chain:'other',pay:{pp:'',name:'',bank:'',acct:''},emoji:'🍱',tags:[],end:'20:30',agree:false,items:[],bundles:[],sets:[]}; drawReg(); }
+function openRegister(){ if(!S.user.verified) return needVerify(openRegister); if(PROD&&!Srv.shopTerms) return Srv.needShopTerms(openRegister); const rt=S.tab==='retail'; R={step:1,retail:rt,decl:false,proof:'',name:'',addr:'',lat:null,lng:null,type:rt?'chain':'eatery',chain:rt?'mall':'other',pay:{pp:'',name:'',bank:'',acct:''},emoji:'🍱',tags:[],end:'20:30',agree:false,items:[],bundles:[],sets:[]}; drawReg(); }
 function regCollect(){
   if(!R) return;
   const v=id=>{ const e=$(id); return e&&typeof e.value==='string'?e.value:null; };
@@ -2257,6 +2263,8 @@ function regCollect(){
   const rc=v('#rch'); if(rc&&CHAINS.includes(rc)) R.chain=rc;
   if($('#ppid')) R.pay=readPay();
   const a=$('#ra'); if(a) R.agree=!!a.checked;
+  const pf=v('#rproof'); if(pf!==null) R.proof=pf.trim().slice(0,300);
+  const dc=$('#rdecl'); if(dc) R.decl=!!dc.checked;
 }
 function adaptToType(){                                                    // keep only items/boxes that fit the new shop type
   const ok=typeCats(R.type);
@@ -2266,7 +2274,8 @@ function adaptToType(){                                                    // ke
   if(!TIMED_TYPES.includes(R.type)) R.tags=[];
 }
 function regLoc(){ if(!R) return; regCollect(); getPos((a,b)=>{ if(!R) return; R.lat=a; R.lng=b; toast(t('locSaved')); drawReg(); }); }
-function regPick(k,val){ if(!R) return; regCollect(); R[k]=val; drawReg(); }
+function regLeaveRetail(){ if(!R) return; regCollect(); R.retail=false; R.type='eatery'; R.chain='other'; R.decl=false; adaptToType(); drawReg(); }
+function regPick(k,val){ if(!R) return; regCollect(); R[k]=val; if(k==='type'&&val==='chain'){ R.retail=true; if(!KINDS.includes(R.chain)) R.chain='mall'; } drawReg(); }
 function regTag(x){ if(!R) return; regCollect(); const i=R.tags.indexOf(x); i>=0?R.tags.splice(i,1):R.tags.push(x); drawReg(); }
 function regAddDish(){
   if(!R) return;
@@ -2281,6 +2290,7 @@ function regNext(){
   regCollect();
   if(R.step===1&&!R.name) return toast(t('needShopName'));
   if(R.step===1&&(hasContact(R.name)||hasContact(R.addr))) return toast(t('noContactInName'));
+  if(R.step===1&&R.type==='chain'&&(!R.decl||(R.proof||'').length<10)) return toast(t('chainNeedDecl'));
   if(R.step===2&&!R.items.length) return toast(t('needDishes'));
   if(R.step<3){ R.step++; drawReg(); }
 }
@@ -2292,8 +2302,11 @@ function drawReg(){
     body=`<label class="text-sm font-semibold" for="rn">${t(R.type==='chain'?'regNameChain':'regName')}</label><input id="rn" maxlength="40" value="${esc(R.name)}" placeholder="${t(R.type==='chain'?'regNameChainPh':'regNamePh')}" class="mb-2">
       <label class="text-sm font-semibold" for="raddr">${t('shopAddr')}</label><input id="raddr" maxlength="80" value="${esc(R.addr||'')}" placeholder="${esc(t('shopAddrPh'))}" class="mb-2">
       <button class="chip mb-1" onclick="regLoc()">📍 ${t('useMyLoc')}${validLL(R.lat,R.lng)?' ✓':''}</button><div class="text-xs muted mb-2">${t('locHint')}</div>
-      <label class="text-sm font-semibold" for="rt">${t('regType')}</label><select id="rt" class="mb-3" onchange="regPick('type',this.value)">${SHOP_TYPES.map(x=>`<option value="${x}" ${R.type===x?'selected':''}>${t('type_'+x)}</option>`).join('')}</select>
-      ${R.type==='chain'?`<div class="text-xs mb-3" style="color:var(--chili)">${t('chainRegWarn')}</div>`:''}
+      ${R.retail?`<label class="text-sm font-semibold" for="rch">${t('regType')}</label><select id="rch" class="mb-3" onchange="regPick('chain',this.value)">${KINDS.map((x,i)=>`<option value="${x}" ${R.chain===x?'selected':''}>${i+1}. ${t('chain_'+x)}</option>`).join('')}</select><button class="chip mb-3" onclick="regLeaveRetail()">← ${t('regOtherType')}</button>`
+      :`<label class="text-sm font-semibold" for="rt">${t('regType')}</label><select id="rt" class="mb-3" onchange="regPick('type',this.value)">${SHOP_TYPES.map(x=>`<option value="${x}" ${R.type===x?'selected':''}>${x==='chain'?t('chain_mall')+' / '+t('chain_conv')+' / '+t('chain_mini'):t('type_'+x)}</option>`).join('')}</select>`}
+      ${R.type==='chain'?`<div class="text-xs mb-3" style="color:var(--chili)">${t('chainRegWarn')}</div>
+      <label class="text-sm font-semibold" for="rproof">${t('chainProofLabel')}</label><textarea id="rproof" rows="3" maxlength="300" class="mb-2" placeholder="${esc(t('chainProofPh'))}">${esc(R.proof||'')}</textarea>
+      <label class="flex gap-2 items-start text-sm mb-3"><input id="rdecl" type="checkbox" ${R.decl?'checked':''} style="width:auto;margin-top:3px"><span><b>${t('chainDecl')}</b></span></label>`:''}
       <div class="text-sm font-semibold">${t('regIcon')}</div><div class="flex flex-wrap gap-2 my-2">${EMOJIS.map(e=>`<button class="chip ${R.emoji===e?'on':''}" style="font-size:20px" aria-pressed="${R.emoji===e}" onclick="regPick('emoji','${e}')">${e}</button>`).join('')}</div>
       ${timed?`<div class="text-sm font-semibold mt-2">${t('regTags')}</div><div class="flex flex-wrap gap-2 my-2">${['halal','veg','set','dessert'].map(x=>`<button class="chip ${R.tags.includes(x)?'on':''}" aria-pressed="${R.tags.includes(x)}" onclick="regTag('${x}')">${t('tag_'+x)}</button>`).join('')}</div>
       <label class="text-sm font-semibold" for="re">${t('regEnd')}</label><select id="re">${END_TIMES.map(x=>`<option ${R.end===x?'selected':''}>${x}</option>`).join('')}</select>`:`<div class="text-xs muted mt-2">${t('anytime')}</div>`}
@@ -2320,6 +2333,7 @@ function regSubmit(){
   if(!S.user.verified) return needVerify(regSubmit);
   if(!R.name) return toast(t('needShopName'));
   if(hasContact(R.name)||hasContact(R.addr)) return toast(t('noContactInName'));
+  if(R.type==='chain'&&(!R.decl||(R.proof||'').length<10)) return toast(t('chainNeedDecl'));
   if(S.shops.filter(x=>x.mine).length>=MAX_SHOPS) return toast(t('maxShops',{n:MAX_SHOPS}));
   if(!R.items.length) return toast(t('needDishes'));
   WI=R.items; WB=R.bundles; WS=R.sets; WT=R.type;
@@ -2330,10 +2344,11 @@ function regSubmit(){
   let end=Date.now()+3650*864e5;
   if(timed){ end=endAtFor(R.end); if(end<=Date.now()+30*60000) end=Date.now()+90*60000; }   // demo: keep the new shop visible
   const id=Date.now();
-  const shop={id,name:R.name,pay:R.type==='chain'?null:(()=>{ const c=cleanPay(R.pay); if(c) c.ts=Date.now(); return c; })(),chain:R.type==='chain'?(CHAINS.includes(R.chain)?R.chain:'other'):'',addr:cleanAddr(R.addr),lat:validLL(R.lat,R.lng)?R.lat:null,lng:validLL(R.lat,R.lng)?R.lng:null,remind:{on:false,hm:'07:30'},type:R.type,emoji:R.emoji,tags:timed?R.tags.slice():[],dist:1.0,mins:0,trust:4.5,n:2,mine:true,verified:true,verifiedAt:Date.now(),endHM:timed?R.end:'',endAt:end,
+  const shop={id,name:R.name,pay:R.type==='chain'?null:(()=>{ const c=cleanPay(R.pay); if(c) c.ts=Date.now(); return c; })(),chain:R.type==='chain'?(KINDS.includes(R.chain)?R.chain:'mall'):'',addr:cleanAddr(R.addr),lat:validLL(R.lat,R.lng)?R.lat:null,lng:validLL(R.lat,R.lng)?R.lng:null,remind:{on:false,hm:'07:30'},type:R.type,emoji:R.emoji,tags:timed?R.tags.slice():[],dist:1.0,mins:0,trust:4.5,n:2,mine:true,verified:true,verifiedAt:Date.now(),endHM:timed?R.end:'',endAt:end,
     items:R.items.map(x=>({...x,left:x.qty,d:bkkISO(),soldAt:0,ep:Date.now()})),bundles:cleanBundles(R.bundles,R.items),sets:cleanBoxes(R.sets)};
-  if(PROD){ Srv.create(shop).then(sid=>{ if(!sid) return; R=null;
-    sheet(`<div class="text-center"><div class="text-5xl mb-2">🎉</div><div class="display text-xl">${t('regDoneTitle')}</div><div class="text-sm muted mt-1 mb-4">${t('regDoneSub')}</div>
+  if(R.type==='chain'){ shop._decl=!!R.decl; shop._proof=R.proof||''; }
+  if(PROD){ const pend=R.type==='chain'; Srv.create(shop).then(sid=>{ if(!sid) return; R=null;
+    sheet(`<div class="text-center"><div class="text-5xl mb-2">${pend?'🕑':'🎉'}</div><div class="display text-xl">${t(pend?'chainPendingTitle':'regDoneTitle')}</div><div class="text-sm muted mt-1 mb-4">${t(pend?'chainPendingSub':'regDoneSub')}</div>
       <button class="btn w-full mb-2" onclick="S.tab='home';save();closeSheet();render()">${t('regPreview')}</button><button class="btn alt w-full" onclick="openDesk(${sid})">📦 ${t('openDesk')}</button></div>`); render(); }); return; }
   S.shops.push(shop);                               // auto-approved: owner is KYC-verified and the declaration is accepted
   if(!save()){ S.shops.pop(); return toast(t('storageFull')); }
@@ -2892,7 +2907,7 @@ function newOrder(sh,o,opts){
   if(o.kind==='item'){ itemName=o.item.name; if(FOOD_CATS.includes(o.item.cat)) foodN+=qty; else nonN+=qty; }
   else if(o.kind==='bundle'){ bundleName=o.bundle.name||''; itemNames=o.items.map(x=>x.name); o.items.forEach(x=>{ if(FOOD_CATS.includes(x.cat)) foodN+=qty; else nonN+=qty; }); }
   else { mix={...o.box.mix}; CATS.forEach(k=>{ const c=+mix[k]||0; if(FOOD_CATS.includes(k)) foodN+=c; else nonN+=c; }); }
-  return {id:Date.now()*1000+crypto.getRandomValues(new Uint16Array(1))[0]%1000,shopId:sh.id,name:(sh.type==='chain'&&sh.chain&&sh.chain!=='other')?(chainName(sh.chain)+' '+loc(sh.name)).slice(0,60):sh.name,emoji:sh.emoji,kind:o.kind,qty,n:o.n,mix,itemName,bundleName,itemNames,
+  return {id:Date.now()*1000+crypto.getRandomValues(new Uint16Array(1))[0]%1000,shopId:sh.id,name:(sh.type==='chain'&&sh.chain&&sh.chain!=='other'&&!KINDS.includes(sh.chain))?(chainName(sh.chain)+' '+loc(sh.name)).slice(0,60):sh.name,emoji:sh.emoji,kind:o.kind,qty,n:o.n,mix,itemName,bundleName,itemNames,
     price:opts.price,fee:0,worth:o.worth*qty,foodN,nonN,code:'CDE-'+rid8(),mode:'pickup',provider:'',dest:null,pin:'0000',status:opts.status||'paid',cp:false,sat:opts.sat||0,cl:false,rp:'',buyer:opts.buyer,ts:Date.now(),
     lk:o.kind,lid:o.kind==='item'?o.item.id:o.kind==='bundle'?o.bundle.id:o.box.id,cloud:false,ch:''};
 }
