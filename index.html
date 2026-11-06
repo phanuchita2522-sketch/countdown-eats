@@ -627,6 +627,9 @@ const T={
   scanUsed:['รหัสนี้ใช้ไปแล้วหรือยังไม่พร้อมใช้','This code was already used or isn’t ready yet'],
   orderExpired:['ออเดอร์นี้หมดเวลารับแล้ว (คืนเงินให้ผู้ซื้อ)','This order has expired (the buyer is refunded)'],
   scanNoCam:['เปิดกล้องไม่ได้ ใช้การพิมพ์รหัสแทน','Camera unavailable — type the code instead'],
+  scanWhyBrowser:['เปิดผ่านเบราว์เซอร์ในแอปอื่น ให้เปิดใน Safari/Chrome','opened inside another app — open in Safari/Chrome'],
+  scanWhyPerm:['ยังไม่อนุญาตกล้อง ไปที่ตั้งค่าเบราว์เซอร์แล้วเลือกอนุญาต','camera permission denied — allow it in browser settings'],
+  scanWhyNone:['ไม่พบกล้องในเครื่อง','no camera found'],
   scanHint:['เล็งกล้องไปที่ QR ของผู้ซื้อหรือไรเดอร์','Point the camera at the buyer’s or rider’s QR'],
   demoFill:['เดโม: ใส่รหัส','Demo: fill code'],
   demoCustomer:['เดโม: จำลองลูกค้าสั่ง','Demo: simulate a customer order'],
@@ -2224,10 +2227,10 @@ async function deskConfirm(sid,raw){
   render(); openDesk(sid);
 }
 async function startScan(sid){
-  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)) return toast(t('scanNoCam'));
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)) return toast(t('scanNoCam')+' ('+t('scanWhyBrowser')+')');
   const detector=('BarcodeDetector' in window)?new BarcodeDetector({formats:['qr_code']}):null;
   if(!detector&&!window.jsQR) return toast(t('scanNoCam'));
-  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); }catch(e){ return toast(t('scanNoCam')); }
+  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); }catch(e){ return toast(t('scanNoCam')+' ('+t(e&&e.name==='NotAllowedError'?'scanWhyPerm':e&&e.name==='NotFoundError'?'scanWhyNone':'scanWhyBrowser')+')'); }
   const el=document.createElement('div'); el.id='scanner';
   el.className='fixed inset-0 z-[95] flex flex-col items-center justify-center p-4'; el.style.background='rgba(10,6,20,.95)';
   el.innerHTML=`<video playsinline muted style="width:100%;max-width:420px;border-radius:16px"></video><div class="text-white text-sm mt-3 text-center">${t('scanHint')}</div><button class="btn ghost mt-4" style="color:#fff;border-color:#ffffff55">${t('close')}</button>`;
