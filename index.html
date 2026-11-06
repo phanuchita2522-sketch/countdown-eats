@@ -627,6 +627,11 @@ const T={
   scanUsed:['รหัสนี้ใช้ไปแล้วหรือยังไม่พร้อมใช้','This code was already used or isn’t ready yet'],
   orderExpired:['ออเดอร์นี้หมดเวลารับแล้ว (คืนเงินให้ผู้ซื้อ)','This order has expired (the buyer is refunded)'],
   scanNoCam:['เปิดกล้องไม่ได้ ใช้การพิมพ์รหัสแทน','Camera unavailable — type the code instead'],
+  scanWhyLib:['โหลดตัวอ่าน QR ไม่ได้ ตรวจสอบอินเทอร์เน็ต','QR reader failed to load — check your connection'],
+  scanPhotoTitle:['สแกนด้วยรูปถ่าย','Scan with a photo'],
+  scanPhotoBtn:['ถ่ายรูป QR / เลือกรูป','Take / choose a QR photo'],
+  scanPhotoHint:['ถ่ายให้ QR เต็มกรอบและชัด ไม่เบลอ แล้วระบบจะอ่านให้','Fill the frame with the QR, in focus, and it will be read for you'],
+  scanPhotoFail:['อ่าน QR จากรูปไม่ได้ ลองถ่ายใหม่ให้ชัดขึ้น หรือพิมพ์รหัส','Could not read a QR in that photo — retake it clearer or type the code'],
   scanWhyBrowser:['เปิดผ่านเบราว์เซอร์ในแอปอื่น ให้เปิดใน Safari/Chrome','opened inside another app — open in Safari/Chrome'],
   scanWhyPerm:['ยังไม่อนุญาตกล้อง ไปที่ตั้งค่าเบราว์เซอร์แล้วเลือกอนุญาต','camera permission denied — allow it in browser settings'],
   scanWhyNone:['ไม่พบกล้องในเครื่อง','no camera found'],
@@ -2226,11 +2231,34 @@ async function deskConfirm(sid,raw){
   o.status='done'; awardBuyer(o); commit(); toast(t('scanOkPickup',{set:orderTitle(o)}));
   render(); openDesk(sid);
 }
+function loadJsQR(){
+  if(window.jsQR) return Promise.resolve(true);
+  const us=['https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js','https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];
+  return new Promise(res=>{ let i=0; const nx=()=>{ if(window.jsQR) return res(true); if(i>=us.length) return res(false); const s=document.createElement('script'); s.src=us[i++]; s.onload=nx; s.onerror=nx; document.head.appendChild(s); }; nx(); });
+}
+function scanPhotoSheet(sid,whyKey){                                          // live camera failed: let the user take/choose a photo of the QR instead
+  sheet(`<div class="display text-xl mb-2">📷 ${t('scanPhotoTitle')}</div><div class="text-sm muted mb-3">${t('scanNoCam')}${whyKey?' ('+t(whyKey)+')':''}</div>
+    <label class="btn w-full text-center" style="display:block;cursor:pointer">📸 ${t('scanPhotoBtn')}<input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanPhotoPick(this,${+sid})"></label>
+    <div class="text-xs muted mt-2">${t('scanPhotoHint')}</div>`);
+}
+async function scanPhotoPick(inp,sid){
+  const f=inp.files&&inp.files[0]; if(!f) return;
+  try{
+    const bmp=await createImageBitmap(f), sc=Math.min(1,1400/Math.max(bmp.width,bmp.height));
+    const c=document.createElement('canvas'); c.width=Math.round(bmp.width*sc); c.height=Math.round(bmp.height*sc);
+    const x=c.getContext('2d',{willReadFrequently:true}); x.drawImage(bmp,0,0,c.width,c.height);
+    let txt='';
+    if('BarcodeDetector' in window){ try{ const r=await new BarcodeDetector({formats:['qr_code']}).detect(c); if(r[0]) txt=r[0].rawValue; }catch(e){} }
+    if(!txt&&await loadJsQR()){ const d=x.getImageData(0,0,c.width,c.height), r=window.jsQR(d.data,d.width,d.height); if(r) txt=r.data; }
+    if(!txt) return toast(t('scanPhotoFail'));
+    closeSheet(); deskConfirm(sid,txt);
+  }catch(e){ toast(t('scanPhotoFail')); }
+}
 async function startScan(sid){
-  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)) return toast(t('scanNoCam')+' ('+t('scanWhyBrowser')+')');
   const detector=('BarcodeDetector' in window)?new BarcodeDetector({formats:['qr_code']}):null;
-  if(!detector&&!window.jsQR) return toast(t('scanNoCam'));
-  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); }catch(e){ return toast(t('scanNoCam')+' ('+t(e&&e.name==='NotAllowedError'?'scanWhyPerm':e&&e.name==='NotFoundError'?'scanWhyNone':'scanWhyBrowser')+')'); }
+  if(!detector&&!(await loadJsQR())) return scanPhotoSheet(sid,'scanWhyLib');
+  if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)) return scanPhotoSheet(sid,'scanWhyBrowser');
+  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); }catch(e){ return scanPhotoSheet(sid,e&&e.name==='NotAllowedError'?'scanWhyPerm':e&&e.name==='NotFoundError'?'scanWhyNone':'scanWhyBrowser'); }
   const el=document.createElement('div'); el.id='scanner';
   el.className='fixed inset-0 z-[95] flex flex-col items-center justify-center p-4'; el.style.background='rgba(10,6,20,.95)';
   el.innerHTML=`<video playsinline muted style="width:100%;max-width:420px;border-radius:16px"></video><div class="text-white text-sm mt-3 text-center">${t('scanHint')}</div><button class="btn ghost mt-4" style="color:#fff;border-color:#ffffff55">${t('close')}</button>`;
