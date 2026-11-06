@@ -13,7 +13,7 @@
 <script src="config.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+<script src="jsQR.js" onerror="this.remove()"></script>
 <style>
 :root{
   --bg:#fff6e6; --card:#ffffff; --text:#241a33; --muted:#7b6f8a; --line:#f0dfc2;
@@ -2233,7 +2233,7 @@ async function deskConfirm(sid,raw){
 }
 function loadJsQR(){
   if(window.jsQR) return Promise.resolve(true);
-  const us=['https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js','https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];
+  const us=['jsQR.js','https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js','https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'];
   return new Promise(res=>{ let i=0; const nx=()=>{ if(window.jsQR) return res(true); if(i>=us.length) return res(false); const s=document.createElement('script'); s.src=us[i++]; s.onload=nx; s.onerror=nx; document.head.appendChild(s); }; nx(); });
 }
 function scanPhotoSheet(sid,whyKey){                                          // live camera failed: let the user take/choose a photo of the QR instead
