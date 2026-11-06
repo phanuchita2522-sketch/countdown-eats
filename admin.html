@@ -124,7 +124,7 @@ function draw(){
 }
 
 const RSN={brand:'แอบอ้างแบรนด์',copyright:'ละเมิดลิขสิทธิ์/เครื่องหมายการค้า',fake:'ร้านปลอม/หลอกลวง',other:'อื่นๆ'};
-const CHN={bigc:'Big C',makro:'Makro',lotus:'Lotus\'s',central:'Central',themall:'The Mall',seven:'7-Eleven',cj:'CJ',other:'อื่นๆ'};
+const CHN={bigc:'Big C',makro:'Makro',lotus:'Lotus\'s',central:'Central',themall:'The Mall',seven:'7-Eleven',cj:'CJ',other:'อื่นๆ',mall:'ห้าง',conv:'ร้านสะดวกซื้อ',mini:'มินิมาร์ท'};
 function mapLink(r){ return (r.lat!=null&&r.lng!=null)?`<a href="https://www.google.com/maps?q=${encodeURIComponent(r.lat+','+r.lng)}" target="_blank" rel="noopener">แผนที่</a>`:'<span class="muted">ไม่มีพิกัด</span>'; }
 function drawReview(){
   if(!REV){ $('#review').innerHTML='<div class="card muted">ยังไม่ได้รัน supabase-chain-guard-patch.sql ใน Supabase</div>'; $('#rcount').textContent='-'; $('#chains').innerHTML=''; return; }
