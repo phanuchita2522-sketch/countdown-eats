@@ -1255,7 +1255,7 @@ const Srv={
       if(!ses){ const r=await cl.auth.signInAnonymously({options:{captchaToken:await capToken()}}); if(r.error||!r.data||!r.data.session) throw (r.error||new Error('auth')); ses=r.data.session; }
       Cloud.sb=cl; Cloud.sbUser=ses.user; Cloud.uid=String(ses.user.id); this.on=true;
       if(already&&ses.user.is_anonymous){
-        let tried=false; try{ tried=sessionStorage.getItem('cde-relogin')==='1'; sessionStorage.setItem('cde-relogin','1'); }catch(e){}
+        let tried=false; try{ tried=(Date.now()-(+sessionStorage.getItem('cde-relogin')||0))<180000; sessionStorage.setItem('cde-relogin',String(tried?0:Date.now())); }catch(e){}
         if(!tried){ toast(t('reloginExisting')); const r=await oauthGo(cl,'google',{},false); if(!(r&&r.error)) return; }
         else toast(t('loginFail'));
       }
@@ -2786,6 +2786,7 @@ async function emailVerify(){
     const f=window._after; window._after=null; if(f) f();
   }catch(x){ toast(t('emailWrong')); }
 }
+function dl(m){ try{ const a=JSON.parse(localStorage.getItem('cde-dl')||'[]'); a.push(new Date().toTimeString().slice(0,8)+' '+String(m).slice(0,80)); localStorage.setItem('cde-dl',JSON.stringify(a.slice(-10))); }catch(e){} }   // login trace shown in the system check (no tokens/codes are stored)
 function pkceClient(){                                                      // App only: separate PKCE client, so the login code that comes back by deep link is useless without the secret kept in this app
   try{ const c=window.CDE_SUPABASE; return window.supabase.createClient(c.url,c.key,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}}); }catch(e){ return null; }
 }
@@ -2794,6 +2795,7 @@ async function oauthGo(cl,provider,extra,link){                          // web:
   if(NATIVE) o.options.skipBrowserRedirect=true;
   if(NATIVE){ const pk=pkceClient(); if(!pk) return {error:new Error('pkce')}; cl=pk; }
   const r=link?await cl.auth.linkIdentity(o):await cl.auth.signInWithOAuth(o);
+  dl((link?'link ':'signin ')+provider+(r&&r.error?' ERR '+(r.error.message||r.error):' ok'));
   if(NATIVE&&r&&r.data&&r.data.url&&!r.error){ try{ localStorage.setItem('cde-oauth-wait',String(Date.now())); }catch(e){} await window.Capacitor.Plugins.Browser.open({url:r.data.url}); }
   return r;
 }
@@ -3188,6 +3190,7 @@ async function runDiag(){
   const call=async(fn,a)=>{ try{ const r=await Cloud.sb.rpc(fn,a||{}); if(r.error) add(fn,'ERR '+(r.error.message||r.error.code)); else add(fn,JSON.stringify(r.data).slice(0,120)); return r.data; }catch(e){ add(fn,'EXC '+(e.message||e)); } };
   await call('my_status'); const m=await call('my_shops'); add('my shops',Array.isArray(m)?m.length:'-'); add('shops in app',S.shops.filter(x=>x.mine).length); add('editable',mgrShops().length);
   await call('fridge_list',{p_kind:'condo',p_place:'test'});
+  add('build','2026-11-09 pkce-trace'); try{ JSON.parse(localStorage.getItem('cde-dl')||'[]').forEach((x,i)=>add('login '+(i+1),x)); }catch(e){}
   add('time',new Date().toISOString()); show();
 }
 /* ---------- Share links (LINE / Messenger / Facebook / copy) ---------- */
@@ -3560,19 +3563,20 @@ if(NATIVE){ try{                                                           // An
   window.Capacitor.Plugins.App.addListener('appUrlOpen',async ev=>{
     const u=String((ev&&ev.url)||''); if(u.indexOf(APP_SCHEME)!==0) return;
     let waited=0; try{ waited=+localStorage.getItem('cde-oauth-wait')||0; localStorage.removeItem('cde-oauth-wait'); }catch(e){}
-    if(!waited||Date.now()-waited>15*60*1000) return;                       // only accept a login link right after this app started one (blocks links forced in by other apps)
+    if(!waited||Date.now()-waited>15*60*1000){ dl('cb ignored (no login started)'); return; }                       // only accept a login link right after this app started one (blocks links forced in by other apps)
     try{ await window.Capacitor.Plugins.Browser.close(); }catch(e){}
     const p=new URLSearchParams((u.split('#')[1]||'')+'&'+(u.split('?')[1]||'').split('#')[0]);
-    const code=p.get('code');
+    const code=p.get('code'); dl('cb code='+(code?1:0)+' err='+(p.get('error_code')||p.get('error')||'-'));
     if(code&&/^[A-Za-z0-9._~-]{8,200}$/.test(code)){                         // PKCE: exchange the one-time code using the verifier stored by this app (implicit tokens are no longer accepted)
       try{ const pk=pkceClient(); if(!pk) throw new Error('pkce'); const r=await pk.auth.exchangeCodeForSession(code); if(r&&r.error) throw r.error; }
-      catch(e){ toast(t('loginFail')); return; }
-      try{ sessionStorage.removeItem('cde-relogin'); }catch(e){}
+      catch(e){ dl('exchange ERR '+(e&&e.message||e)); toast(t('loginFail')+' — '+String(e&&e.message||e).slice(0,100)); return; }
+      dl('exchange ok'); try{ sessionStorage.removeItem('cde-relogin'); }catch(e){}
       location.reload(); return;
     }
     const ed=decodeURIComponent((p.get('error_description')||'').replace(/\+/g,' '));
     if(/already/i.test(ed)&&Cloud.sb){                                      // this Google account already belongs to an older user: sign in as that user
-      let tried=false; try{ tried=sessionStorage.getItem('cde-relogin')==='1'; sessionStorage.setItem('cde-relogin','1'); }catch(e){}
+      let tried=false; try{ tried=(Date.now()-(+sessionStorage.getItem('cde-relogin')||0))<180000; sessionStorage.setItem('cde-relogin',String(tried?0:Date.now())); }catch(e){}
+      dl('already tried='+(tried?1:0));
       if(!tried){ toast(t('reloginExisting')); oauthGo(Cloud.sb,'google',{},false); return; }
     }
     toast(t('loginFail')+(ed?' — '+ed.slice(0,120):''));
