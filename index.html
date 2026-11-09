@@ -2786,9 +2786,13 @@ async function emailVerify(){
     const f=window._after; window._after=null; if(f) f();
   }catch(x){ toast(t('emailWrong')); }
 }
+function pkceClient(){                                                      // App only: separate PKCE client, so the login code that comes back by deep link is useless without the secret kept in this app
+  try{ const c=window.CDE_SUPABASE; return window.supabase.createClient(c.url,c.key,{auth:{flowType:'pkce',persistSession:true,autoRefreshToken:false,detectSessionInUrl:false}}); }catch(e){ return null; }
+}
 async function oauthGo(cl,provider,extra,link){                          // web: normal redirect. App: Google blocks WebViews, so use the system browser and come back by deep link
   const o={provider,options:Object.assign({redirectTo:NATIVE?APP_SCHEME:location.origin+location.pathname},extra||{})};
   if(NATIVE) o.options.skipBrowserRedirect=true;
+  if(NATIVE){ const pk=pkceClient(); if(!pk) return {error:new Error('pkce')}; cl=pk; }
   const r=link?await cl.auth.linkIdentity(o):await cl.auth.signInWithOAuth(o);
   if(NATIVE&&r&&r.data&&r.data.url&&!r.error){ try{ localStorage.setItem('cde-oauth-wait',String(Date.now())); }catch(e){} await window.Capacitor.Plugins.Browser.open({url:r.data.url}); }
   return r;
@@ -3559,9 +3563,9 @@ if(NATIVE){ try{                                                           // An
     if(!waited||Date.now()-waited>15*60*1000) return;                       // only accept a login link right after this app started one (blocks links forced in by other apps)
     try{ await window.Capacitor.Plugins.Browser.close(); }catch(e){}
     const p=new URLSearchParams((u.split('#')[1]||'')+'&'+(u.split('?')[1]||'').split('#')[0]);
-    const at=p.get('access_token'), rt=p.get('refresh_token');
-    if(at&&rt){
-      try{ const cl=Cloud.sb||window.supabase.createClient(window.CDE_SUPABASE.url,window.CDE_SUPABASE.key,{auth:{persistSession:true,autoRefreshToken:true}}); const r=await cl.auth.setSession({access_token:at,refresh_token:rt}); if(r&&r.error) throw r.error; }
+    const code=p.get('code');
+    if(code&&/^[A-Za-z0-9._~-]{8,200}$/.test(code)){                         // PKCE: exchange the one-time code using the verifier stored by this app (implicit tokens are no longer accepted)
+      try{ const pk=pkceClient(); if(!pk) throw new Error('pkce'); const r=await pk.auth.exchangeCodeForSession(code); if(r&&r.error) throw r.error; }
       catch(e){ toast(t('loginFail')); return; }
       try{ sessionStorage.removeItem('cde-relogin'); }catch(e){}
       location.reload(); return;
