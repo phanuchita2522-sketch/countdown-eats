@@ -2790,7 +2790,7 @@ async function oauthGo(cl,provider,extra,link){                          // web:
   const o={provider,options:Object.assign({redirectTo:NATIVE?APP_SCHEME:location.origin+location.pathname},extra||{})};
   if(NATIVE) o.options.skipBrowserRedirect=true;
   const r=link?await cl.auth.linkIdentity(o):await cl.auth.signInWithOAuth(o);
-  if(NATIVE&&r&&r.data&&r.data.url&&!r.error){ await window.Capacitor.Plugins.Browser.open({url:r.data.url}); }
+  if(NATIVE&&r&&r.data&&r.data.url&&!r.error){ try{ localStorage.setItem('cde-oauth-wait',String(Date.now())); }catch(e){} await window.Capacitor.Plugins.Browser.open({url:r.data.url}); }
   return r;
 }
 async function lineLogin(){
@@ -3555,6 +3555,8 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const lb=document
 if(NATIVE){ try{                                                           // Android: finish a Google/LINE login that came back through com.countdowneats.app://auth
   window.Capacitor.Plugins.App.addListener('appUrlOpen',async ev=>{
     const u=String((ev&&ev.url)||''); if(u.indexOf(APP_SCHEME)!==0) return;
+    let waited=0; try{ waited=+localStorage.getItem('cde-oauth-wait')||0; localStorage.removeItem('cde-oauth-wait'); }catch(e){}
+    if(!waited||Date.now()-waited>15*60*1000) return;                       // only accept a login link right after this app started one (blocks links forced in by other apps)
     try{ await window.Capacitor.Plugins.Browser.close(); }catch(e){}
     const p=new URLSearchParams((u.split('#')[1]||'')+'&'+(u.split('?')[1]||'').split('#')[0]);
     const at=p.get('access_token'), rt=p.get('refresh_token');
