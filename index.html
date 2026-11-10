@@ -520,6 +520,9 @@ const T={
   commRefresh:['รีเฟรช','Refresh'],
   commAsk:['ส่งข้อความถึงเจ้าของโพสต์ได้เลย นัดรับในจุดส่วนกลางเท่านั้น','Message the poster. Meet only in a shared area.'],
   diagBtn:['🩺 ตรวจสถานะระบบ (ส่งภาพให้ผู้พัฒนา)','🩺 System check (send a screenshot to the developer)'],
+  reloginTitle:['บัญชี Google นี้เคยสมัครไว้แล้ว','This Google account already exists'],
+  reloginAsk:['กดปุ่มด้านล่างเพื่อเข้าสู่ระบบด้วยบัญชีเดิม (ข้อมูลที่ยังไม่ได้ผูกกับบัญชีในเครื่องนี้จะไม่ถูกย้ายไป)','Tap below to sign in with the existing account (anything not yet linked on this device will not move over)'],
+  reloginBtn:['เข้าสู่ระบบด้วยบัญชี Google เดิม','Sign in with the existing Google account'],
   reloginExisting:['บัญชี Google นี้เคยสมัครไว้แล้ว กำลังเข้าสู่ระบบด้วยบัญชีเดิม…','This Google account already exists. Signing you in…'],
   confirmReceived:['ยืนยันรับของแล้ว','I received it'],
   confirmReceivedSub:['กดเมื่อได้รับของจริงแล้วเท่านั้น โพสต์และแชทนี้จะถูกลบทันที','Only tap after you actually got the item. This post and its chat will be deleted.'],
@@ -1242,18 +1245,20 @@ const SRV_ERR={AUTH:'errAuth',LOGIN:'errLogin',BANNED:'errBanned',RATE:'errRate'
   EXPIRED_ORDER:'orderExpired',BAD_CODE:'scanBadCode',NOT_PAID:'notPaidYet',USED:'scanUsed',TOO_MANY_SHOPS:'maxShops',TOO_MANY_ITEMS:'maxItemsToast',BAD_ITEM:'errBadItem',BAD_FDA:'errBadItem',BAD_TEXT:'noContactInName',BAD_PAY:'payNeed',CHAIN_DECL:'chainDeclNeed'};
 const Srv={
   on:false,since:null,sold:{},hash:{},others:new Map(),mineList:[],known:new Map(),stats:null,dirty:false,pushing:false,again:false,pushT:0,pollT:0,lastFull:0,creating:false,idsSig:'',ordSig:'',
-  async init(){
+  async init(retry){
+    let st='cfg';
     try{
       const cfg=window.CDE_SUPABASE; if(!(cfg&&cfg.url&&cfg.key)) return;
+      st='lib';
       if(!window.supabase){ await new Promise((ok,no)=>{ const e=document.createElement('script'); e.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js'; e.onload=ok; e.onerror=no; document.head.appendChild(e); }); }
       const em=/[?&#]error_description=([^&]+)/.exec(location.search+location.hash);                  // show why a social login came back with an error
       if(em&&!/identity_already_exists|Identity.*already/i.test(decodeURIComponent(location.search+location.hash))){ try{ const msg=decodeURIComponent(em[1].replace(/\+/g,' ')).slice(0,140); setTimeout(()=>{ toast(t('loginFail')+' — '+msg); },1200); history.replaceState(null,'',location.pathname); }catch(e){} }
       const already=/identity_already_exists/.test(location.search+location.hash);       // this Google account already belongs to an older user: sign in as that user instead of linking
       if(already){ try{ history.replaceState(null,'',location.pathname); }catch(e){} }
-      const cl=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-      let ses=(await cl.auth.getSession()).data.session;
-      if(!ses){ const r=await cl.auth.signInAnonymously({options:{captchaToken:await capToken()}}); if(r.error||!r.data||!r.data.session) throw (r.error||new Error('auth')); ses=r.data.session; }
-      Cloud.sb=cl; Cloud.sbUser=ses.user; Cloud.uid=String(ses.user.id); this.on=true;
+      st='client'; const cl=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+      st='session'; let ses=(await cl.auth.getSession()).data.session;
+      if(!ses){ st='anon'; const r=await cl.auth.signInAnonymously({options:{captchaToken:await capToken()}}); if(r.error||!r.data||!r.data.session) throw (r.error||new Error('auth')); ses=r.data.session; }
+      Cloud.sb=cl; Cloud.sbUser=ses.user; Cloud.uid=String(ses.user.id); this.on=true; dl('init ok '+(ses.user.is_anonymous?'anon':'member'));
       if(already&&ses.user.is_anonymous){
         let tried=false; try{ tried=(Date.now()-(+sessionStorage.getItem('cde-relogin')||0))<180000; sessionStorage.setItem('cde-relogin',String(tried?0:Date.now())); }catch(e){}
         if(!tried){ toast(t('reloginExisting')); const r=await oauthGo(cl,'google',{},false); if(!(r&&r.error)) return; }
@@ -1262,7 +1267,7 @@ const Srv={
       if(!ses.user.is_anonymous){ try{ sessionStorage.removeItem('cde-relogin'); }catch(e){} }
       syncAuth(ses.user); await this.consentAfterLogin();
       await this.refresh(true); this.loop(); queueRender(); this.checkTerms();
-    }catch(e){ this.on=false; queueRender(); }
+    }catch(e){ this.on=false; dl('init ERR @'+st+' '+String(e&&(e.message||e.code||e.name)||e)); if(!retry) setTimeout(()=>this.init(true),3000); queueRender(); }   // one automatic retry; the reason is kept in the login trace
   },
   shopTerms:false,
   async checkTerms(){                                                    // a new terms version asks signed-in users to accept again before they continue
@@ -2806,6 +2811,7 @@ async function lineLogin(){
     if(r&&r.error) toast(t('loginFail'));
   }catch(e){ toast(t('loginFail')); }
 }
+function reloginGoogle(){ closeSheet(); if(Cloud.sb) oauthGo(Cloud.sb,'google',{},false); }
 async function googleLogin(){
   const cl=Cloud.sb; if(!cl) return toast(t('kycNoBackend'));
   try{
@@ -3190,7 +3196,7 @@ async function runDiag(){
   const call=async(fn,a)=>{ try{ const r=await Cloud.sb.rpc(fn,a||{}); if(r.error) add(fn,'ERR '+(r.error.message||r.error.code)); else add(fn,JSON.stringify(r.data).slice(0,120)); return r.data; }catch(e){ add(fn,'EXC '+(e.message||e)); } };
   await call('my_status'); const m=await call('my_shops'); add('my shops',Array.isArray(m)?m.length:'-'); add('shops in app',S.shops.filter(x=>x.mine).length); add('editable',mgrShops().length);
   await call('fridge_list',{p_kind:'condo',p_place:'test'});
-  add('build','2026-11-09 pkce-trace'); try{ JSON.parse(localStorage.getItem('cde-dl')||'[]').forEach((x,i)=>add('login '+(i+1),x)); }catch(e){}
+  add('build','2026-11-09 init-trace'); try{ JSON.parse(localStorage.getItem('cde-dl')||'[]').forEach((x,i)=>add('login '+(i+1),x)); }catch(e){}
   add('time',new Date().toISOString()); show();
 }
 /* ---------- Share links (LINE / Messenger / Facebook / copy) ---------- */
@@ -3574,10 +3580,8 @@ if(NATIVE){ try{                                                           // An
       location.reload(); return;
     }
     const ed=decodeURIComponent((p.get('error_description')||'').replace(/\+/g,' '));
-    if(/already/i.test(ed)&&Cloud.sb){                                      // this Google account already belongs to an older user: sign in as that user
-      let tried=false; try{ tried=(Date.now()-(+sessionStorage.getItem('cde-relogin')||0))<180000; sessionStorage.setItem('cde-relogin',String(tried?0:Date.now())); }catch(e){}
-      dl('already tried='+(tried?1:0));
-      if(!tried){ toast(t('reloginExisting')); oauthGo(Cloud.sb,'google',{},false); return; }
+    if(/already/i.test(ed)&&Cloud.sb){                                      // this Google account already belongs to an older user: ask, then sign in as that user (a fresh tap avoids opening two browser tabs back-to-back)
+      dl('already -> ask'); setTimeout(()=>sheet(`<div class="display text-xl mb-2">${t('reloginTitle')}</div><div class="text-sm muted mb-3">${t('reloginAsk')}</div><button class="btn w-full" onclick="reloginGoogle()">${t('reloginBtn')}</button><button class="chip w-full mt-2" onclick="closeSheet()">${t('close')}</button>`),400); return;
     }
     toast(t('loginFail')+(ed?' — '+ed.slice(0,120):''));
   });
