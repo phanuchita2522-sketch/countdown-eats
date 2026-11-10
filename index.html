@@ -803,9 +803,11 @@ const T={
   errNet:['เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ ลองใหม่อีกครั้ง','Could not reach the server – try again'],
   legalPrivacy:['นโยบายความเป็นส่วนตัว (PDPA)','Privacy Policy (PDPA)'],
   legalTerms:['ข้อตกลงการใช้งาน','Terms of Use'],
+  adPriv:['ตัวเลือกความเป็นส่วนตัวของโฆษณา','Ad privacy choices'],
+  adPrivFail:['เปิดหน้าตั้งค่าโฆษณาไม่ได้ ลองใหม่ภายหลัง','Could not open ad choices, try again later'],
   consentTitle:['ก่อนเริ่มใช้งาน','Before you start'],
   consentSub:['ก่อนจองหรือขายสินค้า โปรดอ่านสาระสำคัญด้านล่าง และกดอ่านฉบับเต็มได้ทุกข้อ','Before you reserve or sell, please read the key points below. You can open the full text at any time.'],
-  consentCheck:['ฉันได้อ่านและยอมรับข้อกำหนดการใช้งานและนโยบายความเป็นส่วนตัว (ฉันอายุ 20 ปีขึ้นไปหรือได้รับความยินยอมจากผู้ปกครอง)','I have read and accept the Terms of Use and the Privacy Policy (I am 20 or older, or have a guardian’s consent)'],
+  consentCheck:['ฉันได้อ่านและยอมรับข้อกำหนดการใช้งานและนโยบายความเป็นส่วนตัว (ฉันอายุ 20 ปีขึ้นไป หรืออยู่ในขอบเขตที่กฎหมายให้ผู้เยาว์ใช้งานได้เอง)','I have read and accept the Terms of Use and the Privacy Policy (I am 20 or older, or my use is within what the law lets a minor do alone)'],
   consentP1:['แอปเป็นเพียงตัวกลางให้ร้านค้ากับผู้ซื้อตกลงกันเอง ไม่ใช่ผู้ขายและไม่ถือเงินของคุณ','The app only connects shops and buyers. It is not the seller and never holds your money.'],
   consentP2:['ห้ามแอบอ้างเป็นแบรนด์หรือสาขาที่ไม่ใช่ของตน ร้านประเภทห้าง/มินิมาร์ทต้องรอแอดมินตรวจสอบก่อนแสดง','Do not impersonate a brand or branch that is not yours. Chain/mall/minimart shops are shown only after an admin review.'],
   consentP3:['ระบบบันทึกวัน เวลา เวอร์ชันข้อกำหนด และที่อยู่ IP/ชนิดอุปกรณ์ ตอนที่คุณกดยอมรับ เพื่อใช้เป็นหลักฐาน','When you accept, the system records the date, time, terms version and your IP / device type as evidence.'],
@@ -877,8 +879,17 @@ const Ads={
   ready:false, shown:false, made:false,
   async init(){
     const A=this.native(); if(!A) return;
-    try{ await A.initialize({}); this.ready=true; this.sync(); }catch(e){console.warn(e)}
+    try{
+      try{                                                                  // Google UMP consent (EEA/UK/etc.); skipped silently where not required
+        let ci=await A.requestConsentInfo({});
+        if(ci&&ci.isConsentFormAvailable&&ci.status==='REQUIRED') ci=await A.showConsentForm();
+        this.privOpt=!!(ci&&ci.privacyOptionsRequirementStatus==='REQUIRED');
+      }catch(e){ console.warn('UMP',e); }
+      await A.initialize({}); this.ready=true; this.sync(); if(this.privOpt&&S.tab==='me') render();
+    }catch(e){console.warn(e)}
   },
+  privOpt:false,
+  async privacyOptions(){ const A=this.native(); try{ await A.showPrivacyOptionsForm(); }catch(e){ toast(t('adPrivFail')); } },
   want(){ return ['home','retail','orders'].includes(S.tab)&&!document.getElementById('layer').innerHTML; },   // never over checkout / payment sheets
   async sync(){
     const A=this.native(); if(!A||!this.ready) return;
@@ -3474,7 +3485,7 @@ function viewMe(){
   </div>
   ${PROD&&S.user.verified?`<div class="display text-lg mt-5 mb-2">${t('myData')}</div><div class="space-y-2"><button class="card p-4 w-full text-left font-bold" onclick="Srv.exportData()">⬇️ ${t('exportBtn')}</button><button class="card p-4 w-full text-left font-bold" style="color:var(--chili)" onclick="confirmDelete()">🗑️ ${t('deleteBtn')}</button></div>`:''}
   ${PROD?`<button class="card p-3 w-full text-left text-sm mt-3" onclick="runDiag()">${t('diagBtn')}</button>`:''}
-  <div class="flex flex-wrap gap-2 mt-5"><button class="chip" onclick="openLegal('privacy')">🔒 ${t('legalPrivacy')}</button><button class="chip" onclick="openLegal('terms')">📄 ${t('legalTerms')}</button></div>
+  <div class="flex flex-wrap gap-2 mt-5"><button class="chip" onclick="openLegal('privacy')">🔒 ${t('legalPrivacy')}</button><button class="chip" onclick="openLegal('terms')">📄 ${t('legalTerms')}</button>${Ads.privOpt?`<button class="chip" onclick="Ads.privacyOptions()">📢 ${t('adPriv')}</button>`:''}</div>
   ${PROD?'':`<button class="btn ghost w-full mt-5" onclick="confirmReset()">${t('resetBtn')}</button>`}`;
 }
 function confirmReset(){ sheet(`<div class="display text-xl mb-2">${t('resetTitle')}</div><div class="text-sm muted mb-4">${t('resetSub')}</div><div class="flex gap-2"><button class="btn ghost flex-1" onclick="closeSheet()">${t('cancel')}</button><button class="btn flex-1" onclick="doReset()">${t('clearBtn')}</button></div>`); }
